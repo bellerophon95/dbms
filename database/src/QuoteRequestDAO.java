@@ -80,213 +80,117 @@ public class QuoteRequestDAO {
 		}
 	}
 
-	public List<user> listAllUsers() throws SQLException {
-		List<user> listUser = new ArrayList<user>();
-		String sql = "SELECT * FROM User";
-		connect_func();
-		statement = (Statement) connect.createStatement();
-		ResultSet resultSet = statement.executeQuery(sql);
-
-		while (resultSet.next()) {
-			String email = resultSet.getString("email");
-			String firstName = resultSet.getString("firstName");
-			String lastName = resultSet.getString("lastName");
-			String password = resultSet.getString("password");
-			String birthday = resultSet.getString("birthday");
-			String adress_street_num = resultSet.getString("adress_street_num");
-			String adress_street = resultSet.getString("adress_street");
-			String adress_city = resultSet.getString("adress_city");
-			String adress_state = resultSet.getString("adress_state");
-			String adress_zip_code = resultSet.getString("adress_zip_code");
-			int cash_bal = resultSet.getInt("cash_bal");
-			int PPS_bal = resultSet.getInt("PPS_bal");
-			String role = resultSet.getString("role");
-
-			user users = user.builder().email(email).firstName(firstName).lastName(lastName).password(password)
-					.birthday(birthday).adress_street_num(adress_street_num).adress_street(adress_street)
-					.adress_city(adress_city).adress_state(adress_state).adress_zip_code(adress_zip_code)
-					.cash_bal(cash_bal).PPS_bal(PPS_bal).role(role).build();
-//            user users = new user(email,firstName, lastName, password, birthday, adress_street_num,  adress_street,  adress_city,  adress_state,  adress_zip_code, cash_bal,PPS_bal);
-			listUser.add(users);
-		}
-		resultSet.close();
-		disconnect();
-		return listUser;
-	}
-
 	protected void disconnect() throws SQLException {
 		if (connect != null && !connect.isClosed()) {
 			connect.close();
 		}
 	}
 
-	public void insert(user users) throws SQLException {
-		connect_func("root", "pass1234");
-		String sql = "insert into User(email, firstName, lastName, password, birthday,adress_street_num, adress_street,adress_city,adress_state,adress_zip_code,cash_bal,PPS_bal, role) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,?, ?)";
-		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, users.getEmail());
-		preparedStatement.setString(2, users.getFirstName());
-		preparedStatement.setString(3, users.getLastName());
-		preparedStatement.setString(4, users.getPassword());
-		preparedStatement.setString(5, users.getBirthday());
-		preparedStatement.setString(6, users.getAdress_street_num());
-		preparedStatement.setString(7, users.getAdress_street());
-		preparedStatement.setString(8, users.getAdress_city());
-		preparedStatement.setString(9, users.getAdress_state());
-		preparedStatement.setString(10, users.getAdress_zip_code());
-		preparedStatement.setInt(11, users.getCash_bal());
-		preparedStatement.setInt(12, users.getPPS_bal());
-		preparedStatement.setString(13, users.getRole());
+	;
 
-		preparedStatement.executeUpdate();
-		preparedStatement.close();
-	}
+	public boolean deleteQuoteRequest(QuoteRequest toBeDeleteQuoteRequest) throws SQLException {
 
-	public boolean delete(String email) throws SQLException {
-		String sql = "DELETE FROM User WHERE email = ?";
+		String sql = "DELETE FROM `QuoteRequest` WHERE (`email` = ? AND `createdOn` = ?)";
+
 		connect_func();
-
 		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, email);
+		preparedStatement.setString(1, toBeDeleteQuoteRequest.getEmail());
+		preparedStatement.setString(2, toBeDeleteQuoteRequest.getCreatedOn());
 
-		boolean rowDeleted = preparedStatement.executeUpdate() > 0;
-		preparedStatement.close();
-		return rowDeleted;
+		Boolean wasSuccessful = preparedStatement.executeUpdate() > 0;
+
+//		statement.close();
+		return wasSuccessful;
 	}
 
-	public boolean update(user users) throws SQLException {
-		String sql = "update User set firstName=?, lastName =?,password = ?,birthday=?,adress_street_num =?, adress_street=?,adress_city=?,adress_state=?,adress_zip_code=?, cash_bal=?, PPS_bal =? where email = ?";
+	public boolean updateQuoteRequest(QuoteRequest updatedQuoteRequest) throws SQLException {
+
+		String sql = "UPDATE `QuoteRequest` SET `requestType` = ?, `description` = ?, `status` = ?, `comment` = ?, `userComment` = ? "
+				+ "WHERE `email` = ? AND `createdOn` = ?;\n";
+
 		connect_func();
-
 		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, users.getEmail());
-		preparedStatement.setString(2, users.getFirstName());
-		preparedStatement.setString(3, users.getLastName());
-		preparedStatement.setString(4, users.getPassword());
-		preparedStatement.setString(5, users.getBirthday());
-		preparedStatement.setString(6, users.getAdress_street_num());
-		preparedStatement.setString(7, users.getAdress_street());
-		preparedStatement.setString(8, users.getAdress_city());
-		preparedStatement.setString(9, users.getAdress_state());
-		preparedStatement.setString(10, users.getAdress_zip_code());
-		preparedStatement.setInt(11, users.getCash_bal());
-		preparedStatement.setInt(12, users.getPPS_bal());
+		preparedStatement.setString(1, updatedQuoteRequest.getRequestType());
+		preparedStatement.setString(2, updatedQuoteRequest.getDescription());
+		preparedStatement.setString(3, updatedQuoteRequest.getStatus());
+		preparedStatement.setString(4, updatedQuoteRequest.getComment());
+		preparedStatement.setString(5, updatedQuoteRequest.getUserComment() );
+		preparedStatement.setString(6, updatedQuoteRequest.getEmail());
+		preparedStatement.setString(7, updatedQuoteRequest.getCreatedOn());
 
-		boolean rowUpdated = preparedStatement.executeUpdate() > 0;
-		preparedStatement.close();
-		return rowUpdated;
+		Boolean wasSuccessful = preparedStatement.executeUpdate() > 0;
+
+//		statement.close();
+		return wasSuccessful;
 	}
 
-	public user getUser(String email) throws SQLException {
-		user user = null;
-		String sql = "SELECT * FROM User WHERE email = ?";
+	public List<QuoteRequest> listClientQuoteRequests(user user) throws SQLException {
+		String sql = "SELECT * FROM QuoteRequest WHERE `email` = ?";
+		List<QuoteRequest> quoteRequests = new ArrayList<>();
 
 		connect_func();
 
 		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, email);
+		preparedStatement.setString(1, user.getEmail());
 
 		ResultSet resultSet = preparedStatement.executeQuery();
 
-		if (resultSet.next()) {
-			String firstName = resultSet.getString("firstName");
-			String lastName = resultSet.getString("lastName");
-			String password = resultSet.getString("password");
-			String birthday = resultSet.getString("birthday");
-			String adress_street_num = resultSet.getString("adress_street_num");
-			String adress_street = resultSet.getString("adress_street");
-			String adress_city = resultSet.getString("adress_city");
-			String adress_state = resultSet.getString("adress_state");
-			String adress_zip_code = resultSet.getString("adress_zip_code");
-			int cash_bal = resultSet.getInt("cash_bal");
-			int PPS_bal = resultSet.getInt("PPS_bal");
-			user = new user(email, firstName, lastName, password, birthday, adress_street_num, adress_street,
-					adress_city, adress_state, adress_zip_code, cash_bal, PPS_bal);
+		while (resultSet.next()) {
+			quoteRequests.add(QuoteRequest.builder().email(resultSet.getString("email"))
+					.createdOn(resultSet.getString("createdOn")).description(resultSet.getString("description"))
+					.requestType(resultSet.getString("requestType")).comment(resultSet.getString("comment"))
+					.status(resultSet.getString("status")).userComment(resultSet.getString("userComment")).build());
+
 		}
 
 		resultSet.close();
-		statement.close();
+//		statement.close();
 
-		return user;
+		return quoteRequests;
 	}
 
-	public boolean checkEmail(String email) throws SQLException {
-		boolean checks = false;
-		String sql = "SELECT * FROM User WHERE email = ?";
+	public List<QuoteRequest> listQuoteRequests() throws SQLException {
+		String sql = "SELECT * FROM QuoteRequest";
+		List<QuoteRequest> quoteRequests = new ArrayList<>();
+
 		connect_func();
+
 		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, email);
+
 		ResultSet resultSet = preparedStatement.executeQuery();
 
-		System.out.println(checks);
+		while (resultSet.next()) {
+			quoteRequests.add(QuoteRequest.builder().email(resultSet.getString("email"))
+					.createdOn(resultSet.getString("createdOn")).description(resultSet.getString("description"))
+					.requestType(resultSet.getString("requestType")).status(resultSet.getString("status"))
+					.comment(resultSet.getString("comment")).userComment(resultSet.getString("userComment")).build());
 
-		if (resultSet.next()) {
-			checks = true;
 		}
 
-		System.out.println(checks);
-		return checks;
+		resultSet.close();
+//		statement.close();
+
+		return quoteRequests;
 	}
 
-	public boolean checkAddress(String adress_street_num, String adress_street, String adress_city, String adress_state,
-			String adress_zip_code) throws SQLException {
-		boolean checks = false;
-		String sql = "SELECT * FROM User WHERE adress_street_num = ? AND adress_street = ? AND adress_city = ? AND adress_state = ? AND adress_zip_code = ?";
+	public boolean insertQuoteRequest(QuoteRequest quoteRequest) throws SQLException {
+		String sql = "INSERT INTO `QuoteRequest` (`email`, `createdOn`, `description`, `status`, `requestType`, `comment`, `userComment`)\n"
+				+ "VALUES\n" + "	(?, ?, ?, ?, ?, ?, ? );\n" + "";
 		connect_func();
 		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, adress_street_num);
-		preparedStatement.setString(2, adress_street);
-		preparedStatement.setString(3, adress_city);
-		preparedStatement.setString(4, adress_state);
-		preparedStatement.setString(5, adress_zip_code);
-		ResultSet resultSet = preparedStatement.executeQuery();
+		preparedStatement.setString(1, quoteRequest.getEmail());
+		preparedStatement.setString(2, quoteRequest.getCreatedOn());
+		preparedStatement.setString(3, quoteRequest.getDescription());
+		preparedStatement.setString(4, quoteRequest.getStatus());
+		preparedStatement.setString(5, quoteRequest.getRequestType());
+		preparedStatement.setString(6, quoteRequest.getComment());
+		preparedStatement.setString(7, quoteRequest.getUserComment());
 
-		System.out.println(checks);
+		Boolean wasSuccessful = preparedStatement.executeUpdate() > 0;
 
-		if (resultSet.next()) {
-			checks = true;
-		}
-
-		System.out.println(checks);
-		return checks;
-	}
-
-	public boolean checkPassword(String password) throws SQLException {
-		boolean checks = false;
-		String sql = "SELECT * FROM User WHERE password = ?";
-		connect_func();
-		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, password);
-		ResultSet resultSet = preparedStatement.executeQuery();
-
-		System.out.println(checks);
-
-		if (resultSet.next()) {
-			checks = true;
-		}
-
-		System.out.println(checks);
-		return checks;
-	}
-
-	public boolean isValid(String email, String password) throws SQLException {
-		String sql = "SELECT * FROM User";
-		connect_func();
-		statement = (Statement) connect.createStatement();
-		ResultSet resultSet = statement.executeQuery(sql);
-
-		resultSet.last();
-
-		int setSize = resultSet.getRow();
-		resultSet.beforeFirst();
-
-		for (int i = 0; i < setSize; i++) {
-			resultSet.next();
-			if (resultSet.getString("email").equals(email) && resultSet.getString("password").equals(password)) {
-				return true;
-			}
-		}
-		return false;
+		preparedStatement.close();
+//		statement.close();
+		return wasSuccessful;
 	}
 
 	public void init() throws SQLException, FileNotFoundException, IOException {
@@ -295,27 +199,29 @@ public class QuoteRequestDAO {
 
 		String[] INITIAL = { "drop table if exists QuoteRequest; ",
 
-				("CREATE TABLE `QuoteRequest` (`email` varchar(30) NOT NULL,\n"
+				("CREATE TABLE `QuoteRequest` (\n"
+						+ "  `email` varchar(30) NOT NULL,\n"
 						+ "  `createdOn` datetime NOT NULL,\n"
-						+ "  `description` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,\n"
+						+ "  `description` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,\n"
 						+ "  `status` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,\n"
-						+ "  `requestType` varchar(20) DEFAULT NULL,\n" + "  PRIMARY KEY (`email`,`createdOn`)\n"
-						+ ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;") };
+						+ "  `requestType` varchar(40) DEFAULT NULL,\n"
+						+ "  `comment` varchar(500) DEFAULT NULL,\n"
+						+ "  `userComment` varchar(50) DEFAULT NULL,\n"
+						+ "  PRIMARY KEY (`email`,`createdOn`)\n"
+						+ ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;;") };
 
 		String[] TUPLES = {
 
-				"INSERT INTO `QuoteRequest` (`email`, `createdOn`, `description`, `status`, `requestType`)\n"
+				"INSERT INTO `QuoteRequest` (`email`, `createdOn`, `description`, `status`, `requestType`, `comment`, `userComment`)\n"
 						+ "VALUES\n"
-						+ "	('a@gmail.com', '2023-01-01 23:51:00', 'ChangeTime to Mon 23', 'Under Consideration', 'RESCHEDULE'),\n"
-						+ "	('b@gmail.com', '2023-01-01 23:51:00', 'ChangeLocation to Kirby Street', 'Under Consideration', 'RELOCATE'),\n"
-						+ "	('b@gmail.com', '2023-01-03 23:51:00', 'ChangeTime to Mon 24', 'Under Consideration', 'RELOCATE'),\n"
-						+ "	('c@gmail.com', '2023-01-01 23:51:00', 'Give 15% discount. REMARKS:- Foliage dense, will consider 8%, refile', 'Rejected', 'NEGOTIATE_PRICE'),\n"
-						+ "	('c@gmail.com', '2023-01-02 23:51:00', 'ChangeTime to Mon 14', 'Accepted', 'RESCHEDULE'),\n"
-						+ "	('d@gmail.com', '2023-01-02 23:51:00', 'Clear the yard. REMARKS:- Customer accepted 5% surcharge', 'Accepted', 'ANCILLARY_TASK'),\n"
-						+ "	('e@gmail.com', '2023-01-02 23:51:00', 'ChangeTime to Tue 26. REMARKS:- Schedule free on 29', 'Rejected', 'ANCILLARY_TASK'),\n"
-						+ "	('f@gmail.com', '2023-01-02 23:51:00', 'change location to Devil\\'s Inn', 'Under Consideration', 'RELOCATION'),\n"
-						+ "	('g.gmail.com', '2023-01-02 23:51:00', 'change location to Mount Fishmore', 'Under Consideration', 'RELOCATION'),\n"
-						+ "	('h.gmail.com', '2023-01-02 23:51:00', 'change location to Downtown Dumpyard', 'Under Consideration', 'RELOCATION');\n"
+						+ "	('jo@gmail.com', '2023-01-01 23:51:01', 'ChangeTime to Mon 23', 'UNDER_CONSIDERATION', 'RESCHEDULE', 'Need more time to reconsider until Feburary 8', 'NO_USER_COMMENTS_YET'),\n"
+						+ "	('jo@gmail.com', '2023-01-01 23:51:02', 'ChangeLocation to Kirby Street', 'UNDER_CONSIDERATION', 'RELOCATE','Need more time to reconsider until Feburary 8','NO_USER_COMMENTS_YET'),\n"
+						+ "	('jo@gmail.com', '2023-01-03 23:51:03', 'ChangeTime to Mon 24', 'UNDER_CONSIDERATION', 'RELOCATE','NO_COMMENTS_YET','NO_USER_COMMENTS_YET'),\n"
+						+ "	('c@gmail.com', '2023-01-01 23:51:00', 'Give 15% discount. REMARKS:- Foliage dense, will consider 8%, refile', 'REFILE', 'NEGOTIATE_PRICE','Refile with new quote request','NO_USER_COMMENTS_YET'),\n"
+						+ "	('e@gmail.com', '2023-01-02 23:51:00', 'ChangeTime to Tue 26. REMARKS:- Schedule free on 29', 'REJECTED', 'ANCILLARY_TASK','NO_COMMENTS_YET','NO_USER_COMMENTS_YET'),\n"
+						+ "	('f@gmail.com', '2023-01-02 23:51:00', 'change location to Devil\\'s Inn', 'UNDER_CONSIDERATION', 'RELOCATION','Need more time to reconsider until Feburary 8','NO_USER_COMMENTS_YET'),\n"
+						+ "	('g.gmail.com', '2023-01-02 23:51:00', 'change location to Mount Fishmore', 'UNDER_CONSIDERATION', 'RELOCATION','NO_COMMENTS_YET','NO_USER_COMMENTS_YET'),\n"
+						+ "	('h.gmail.com', '2023-01-02 23:51:00', 'change location to Downtown Dumpyard', 'UNDER_CONSIDERATION', 'RELOCATION','NO_COMMENTS_YET','NO_USER_COMMENTS_YET');\n"
 						+ "" };
 		// for loop to put these in database
 		for (int i = 0; i < INITIAL.length; i++)

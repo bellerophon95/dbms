@@ -39,6 +39,7 @@ public class QuoteDAO {
 	 * @see HttpServlet#HttpServlet()
 	 */
 	protected void connect_func() throws SQLException {
+
 		// uses default connection to the database
 		if (connect == null || connect.isClosed()) {
 			try {
@@ -211,6 +212,7 @@ public class QuoteDAO {
 	}
 
 	public boolean checkEmail(String email) throws SQLException {
+
 		boolean checks = false;
 		String sql = "SELECT * FROM User WHERE email = ?";
 		connect_func();
@@ -251,42 +253,53 @@ public class QuoteDAO {
 		return checks;
 	}
 
-	public boolean checkPassword(String password) throws SQLException {
-		boolean checks = false;
-		String sql = "SELECT * FROM User WHERE password = ?";
+	public boolean insertQuote(Quote quote) throws SQLException {
+		String sql = "INSERT INTO `Quote` (`createdTime`, `email`, `description`, `status`, `modifiedTime`, `requestType`)\n"
+				+ "VALUES\n" + "	(?, ?, ?, ?, ?, ?);\n" + "";
 		connect_func();
+
 		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, password);
-		ResultSet resultSet = preparedStatement.executeQuery();
+		preparedStatement.setString(1, quote.getCreatedTime());
+		preparedStatement.setString(2, quote.getEmail());
+		preparedStatement.setString(3, quote.getDescription());
+		preparedStatement.setString(4, quote.getStatus());
+		preparedStatement.setString(5, quote.getModifiedTime());
+		preparedStatement.setString(6, quote.getRequestType());
 
-		System.out.println(checks);
+		Boolean wasSuccessful = preparedStatement.executeUpdate() > 0;
 
-		if (resultSet.next()) {
-			checks = true;
-		}
-
-		System.out.println(checks);
-		return checks;
+		preparedStatement.close();
+//		statement.close();
+		return wasSuccessful;
 	}
 
-	public boolean isValid(String email, String password) throws SQLException {
-		String sql = "SELECT * FROM User";
+	public List<Quote> listQuotes() throws SQLException {
+		String sql = "SELECT * FROM Quote";
+		List<Quote> quotes = new ArrayList<>();
+
 		connect_func();
-		statement = (Statement) connect.createStatement();
-		ResultSet resultSet = statement.executeQuery(sql);
 
-		resultSet.last();
+		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
 
-		int setSize = resultSet.getRow();
-		resultSet.beforeFirst();
+		ResultSet resultSet = preparedStatement.executeQuery();
 
-		for (int i = 0; i < setSize; i++) {
-			resultSet.next();
-			if (resultSet.getString("email").equals(email) && resultSet.getString("password").equals(password)) {
-				return true;
-			}
+		while (resultSet.next()) {
+			String modifiedTime = resultSet.getString("modifiedTime");
+			String createdTime = resultSet.getString("createdTime");
+			String description = resultSet.getString("description");
+			String email = resultSet.getString("email");
+			String status = resultSet.getString("status");
+			String requestType = resultSet.getString("requestType");
+
+			quotes.add(Quote.builder().email(email).createdTime(createdTime).modifiedTime(modifiedTime)
+					.description(description).status(status).requestType(requestType).build());
+
 		}
-		return false;
+
+		resultSet.close();
+//		statement.close();
+
+		return quotes;
 	}
 
 	public void init() throws SQLException, FileNotFoundException, IOException {
@@ -296,24 +309,25 @@ public class QuoteDAO {
 		String[] INITIAL = { "drop table if exists Quote; ",
 
 				("CREATE TABLE `Quote` (\n" + "  `createdTime` datetime NOT NULL,\n"
-						+ "  `email` varchar(30) NOT NULL,\n"
-						+ "  `description` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,\n"
+						+ "  `email` varchar(50) NOT NULL,\n"
+						+ "  `description` varchar(400) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,\n"
 						+ "  `status` varchar(20) DEFAULT NULL,\n" + "  `modifiedTime` datetime DEFAULT NULL,\n"
-						+ "  PRIMARY KEY (`createdTime`,`email`)\n"
+						+ "  `requestType` varchar(40) DEFAULT NULL,\n" + "  PRIMARY KEY (`createdTime`,`email`)\n"
 						+ ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;") };
 
 		String[] TUPLES = {
 
-				"INSERT INTO `Quote` (`createdTime`, `email`, `description`, `status`, `modifiedTime`)\n" + "VALUES\n"
-						+ "	('0022-04-19 10:34:24', 'a@gmail.com', 'Cut tree', 'Pending', '0022-04-22 10:34:24'),\n"
-						+ "	('0022-04-20 10:34:24', 'b@gmail.com', 'Cut tree', 'Pending', '0022-04-22 10:34:24'),\n"
-						+ "	('0022-04-22 10:34:24', 'c@gmail.com', 'Cut tree', 'Pending', '0022-04-22 10:34:24'),\n"
-						+ "	('0022-04-22 10:34:24', 'd@gmail.com', 'Cut tree', 'Pending', '0022-04-22 10:34:24'),\n"
-						+ "	('0022-04-23 10:34:24', 'e@gmail.com', 'Cut tree', 'Pending', '0022-04-22 10:34:24'),\n"
-						+ "	('0022-04-24 10:34:24', 'f@gmail.com', 'Cut tree', 'Pending', '0022-04-22 10:34:24'),\n"
-						+ "	('0022-04-24 10:34:24', 'g@gmail.com', 'Cut tree', 'Pending', '0022-04-22 10:34:24'),\n"
-						+ "	('0022-04-24 10:34:24', 'h@gmail.com', 'Cut tree', 'Pending', '0022-04-22 10:34:24'),\n"
-						+ "	('0022-04-24 10:34:24', 'y@gmail.com', 'Cut tree', 'Pending', '0022-04-22 10:34:24');\n" };
+				"INSERT INTO `Quote` (`createdTime`, `email`, `description`, `status`, `modifiedTime`, `requestType`)\n"
+						+ "VALUES\n"
+						+ "	('0022-04-19 10:34:24', 'jo@gmail.com', 'Cut tree', 'BACKLOG', '0022-04-22 10:34:24', 'RESCHEDULE'),\n"
+						+ "	('0022-04-20 10:34:25', 'jo@gmail.com', 'Cut tree', 'BACKLOG', '0022-04-22 10:34:24', 'RESCHEDULE'),\n"
+						+ "	('0022-04-22 10:34:24', 'c@gmail.com', 'Cut tree', 'BACKLOG', '0022-04-22 10:34:24', 'RESCHEDULE'),\n"
+						+ "	('0022-04-22 10:34:24', 'd@gmail.com', 'Cut tree', 'BACKLOG', '0022-04-22 10:34:24', 'RESCHEDULE'),\n"
+						+ "	('0022-04-24 10:34:24', 'f@gmail.com', 'Cut tree', 'BACKLOG', '0022-04-22 10:34:24', 'RESCHEDULE'),\n"
+						+ "	('0022-04-24 10:34:24', 'g@gmail.com', 'Cut tree', 'BACKLOG', '0022-04-22 10:34:24', 'RESCHEDULE'),\n"
+						+ "	('0022-04-24 10:34:24', 'h@gmail.com', 'Cut tree', 'BACKLOG', '0022-04-22 10:34:24', 'RESCHEDULE'),\n"
+						+ "	('0022-04-24 10:34:24', 'y@gmail.com', 'Cut tree', 'BACKLOG', '0022-04-22 10:34:24', 'RESCHEDULE');\n"
+						+ "" };
 		// for loop to put these in database
 		for (int i = 0; i < INITIAL.length; i++)
 			statement.execute(INITIAL[i]);

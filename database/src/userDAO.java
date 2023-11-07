@@ -233,6 +233,7 @@ public class userDAO {
 		boolean checks = false;
 		String sql = "SELECT * FROM User WHERE adress_street_num = ? AND adress_street = ? AND adress_city = ? AND adress_state = ? AND adress_zip_code = ?";
 		connect_func();
+
 		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
 		preparedStatement.setString(1, adress_street_num);
 		preparedStatement.setString(2, adress_street);
@@ -300,8 +301,8 @@ public class userDAO {
 						+ "password VARCHAR(20) NOT NULL, " + "birthday DATE NOT NULL, "
 						+ "adress_street_num VARCHAR(4) , " + "adress_street VARCHAR(30) , "
 						+ "adress_city VARCHAR(20)," + "adress_state VARCHAR(2)," + "adress_zip_code VARCHAR(5),"
-						+ "cash_bal DECIMAL(13,2) DEFAULT 1000," + "PPS_bal DECIMAL(13,2) DEFAULT 0," + "role VARCHAR(10),"
-						+ "PRIMARY KEY (email) " + "); ") };
+						+ "cash_bal DECIMAL(13,2) DEFAULT 1000," + "PPS_bal DECIMAL(13,2) DEFAULT 0,"
+						+ "role VARCHAR(10)," + "PRIMARY KEY (email) " + "); ") };
 		String[] TUPLES = {
 				("insert into User(email, firstName, lastName, password, birthday, adress_street_num, adress_street, adress_city, adress_state, adress_zip_code, cash_bal, PPS_bal, role)"
 						+ "values ('susie@gmail.com', 'Susie ', 'Guzman', 'susie1234', '2000-06-27', '1234', 'whatever street', 'detroit', 'MI', '48202','1000', '0', 'CLIENT'),"

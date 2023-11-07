@@ -16,6 +16,7 @@
 	 <center>
 		 <a href="login.jsp"target ="_self" > logout</a><br><br> 
 		 <p> You can show all the transactions or other attributes here like balance, name of the user and others.</p>
+		 <a href="/database/client/quoteRequest" target ="_self" > List quote requests</a>
 		 </center>
 	</body>
 </html>

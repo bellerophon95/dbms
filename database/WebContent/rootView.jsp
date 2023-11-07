@@ -45,6 +45,7 @@
                     <td><c:out value="${users.role}" /></td>
             </c:forEach>
         </table>
+        <a href="/database/quoteRequest">View all quote requests</a>
 	</div>
 	</div>
 

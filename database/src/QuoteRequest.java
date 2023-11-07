@@ -1,20 +1,21 @@
+import java.util.Date;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-
 @AllArgsConstructor
 @Setter
 @Getter
 @Builder
-public class Quote {
-	
-	private String modifiedTime;
-	private String createdTime;
+public class QuoteRequest {
+
+	private String requestType;
+	private String createdOn;
 	private String description;
 	private String email;
 	private String status;
-	private String requestType;
-
+	private String comment;
+	private String userComment;
 }
