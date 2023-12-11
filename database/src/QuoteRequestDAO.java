@@ -114,7 +114,7 @@ public class QuoteRequestDAO {
 		preparedStatement.setString(2, updatedQuoteRequest.getDescription());
 		preparedStatement.setString(3, updatedQuoteRequest.getStatus());
 		preparedStatement.setString(4, updatedQuoteRequest.getComment());
-		preparedStatement.setString(5, updatedQuoteRequest.getUserComment() );
+		preparedStatement.setString(5, updatedQuoteRequest.getUserComment());
 		preparedStatement.setString(6, updatedQuoteRequest.getEmail());
 		preparedStatement.setString(7, updatedQuoteRequest.getCreatedOn());
 
@@ -136,10 +136,13 @@ public class QuoteRequestDAO {
 		ResultSet resultSet = preparedStatement.executeQuery();
 
 		while (resultSet.next()) {
-			quoteRequests.add(QuoteRequest.builder().email(resultSet.getString("email"))
-					.createdOn(resultSet.getString("createdOn")).description(resultSet.getString("description"))
-					.requestType(resultSet.getString("requestType")).comment(resultSet.getString("comment"))
-					.status(resultSet.getString("status")).userComment(resultSet.getString("userComment")).build());
+			quoteRequests.add(QuoteRequest.builder().treeID(Integer.valueOf(resultSet.getString("treeID")))
+					.quoteRequestID(Integer.valueOf(resultSet.getString("quoteRequestID")))
+					.email(resultSet.getString("email")).createdOn(resultSet.getString("createdOn"))
+					.description(resultSet.getString("description")).requestType(resultSet.getString("requestType"))
+					.comment(resultSet.getString("comment")).status(resultSet.getString("status"))
+					.userComment(resultSet.getString("userComment"))
+					.proposedPrice(Integer.valueOf(resultSet.getString("proposedPrice"))).build());
 
 		}
 
@@ -160,10 +163,13 @@ public class QuoteRequestDAO {
 		ResultSet resultSet = preparedStatement.executeQuery();
 
 		while (resultSet.next()) {
-			quoteRequests.add(QuoteRequest.builder().email(resultSet.getString("email"))
-					.createdOn(resultSet.getString("createdOn")).description(resultSet.getString("description"))
-					.requestType(resultSet.getString("requestType")).status(resultSet.getString("status"))
-					.comment(resultSet.getString("comment")).userComment(resultSet.getString("userComment")).build());
+			quoteRequests.add(QuoteRequest.builder().treeID(Integer.valueOf(resultSet.getString("treeID")))
+					.quoteRequestID(Integer.valueOf(resultSet.getString("quoteRequestID")))
+					.email(resultSet.getString("email")).createdOn(resultSet.getString("createdOn"))
+					.description(resultSet.getString("description")).requestType(resultSet.getString("requestType"))
+					.status(resultSet.getString("status")).comment(resultSet.getString("comment"))
+					.userComment(resultSet.getString("userComment")).proposedPrice(resultSet.getInt("proposedPrice"))
+					.build());
 
 		}
 
@@ -173,9 +179,29 @@ public class QuoteRequestDAO {
 		return quoteRequests;
 	}
 
+	public Integer getMaxQuoteRequestID() throws SQLException {
+		String sql = "SELECT max(quoteRequestID) as maxQuoteRequestID FROM QuoteRequest";
+
+		connect_func();
+
+		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
+
+		ResultSet resultSet = preparedStatement.executeQuery();
+
+		if (resultSet.next()) {
+			return resultSet.getInt("maxQuoteRequestID");
+
+		}
+
+		resultSet.close();
+//		statement.close();
+
+		return -1;
+	}
+
 	public boolean insertQuoteRequest(QuoteRequest quoteRequest) throws SQLException {
-		String sql = "INSERT INTO `QuoteRequest` (`email`, `createdOn`, `description`, `status`, `requestType`, `comment`, `userComment`)\n"
-				+ "VALUES\n" + "	(?, ?, ?, ?, ?, ?, ? );\n" + "";
+		String sql = "INSERT INTO `QuoteRequest` (`email`, `createdOn`, `description`, `status`, `requestType`, `comment`, `userComment`, `treeID`, `proposedPrice`, `quoteRequestID`)\n"
+				+ "VALUES\n" + "	(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);\n" + "";
 		connect_func();
 		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
 		preparedStatement.setString(1, quoteRequest.getEmail());
@@ -185,6 +211,9 @@ public class QuoteRequestDAO {
 		preparedStatement.setString(5, quoteRequest.getRequestType());
 		preparedStatement.setString(6, quoteRequest.getComment());
 		preparedStatement.setString(7, quoteRequest.getUserComment());
+		preparedStatement.setInt(8, quoteRequest.getTreeID());
+		preparedStatement.setInt(9, quoteRequest.getProposedPrice());
+		preparedStatement.setInt(10, quoteRequest.getQuoteRequestID());
 
 		Boolean wasSuccessful = preparedStatement.executeUpdate() > 0;
 
@@ -199,29 +228,34 @@ public class QuoteRequestDAO {
 
 		String[] INITIAL = { "drop table if exists QuoteRequest; ",
 
-				("CREATE TABLE `QuoteRequest` (\n"
-						+ "  `email` varchar(30) NOT NULL,\n"
-						+ "  `createdOn` datetime NOT NULL,\n"
+				("CREATE TABLE `QuoteRequest` (\n" + "  `email` varchar(30) NOT NULL,\n"
+						+ "  `createdOn` datetime NOT NULL,\n" + "  `quoteRequestID` int NOT NULL,\n"
+						+ "  `treeID` int NOT NULL,\n"
 						+ "  `description` varchar(150) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,\n"
 						+ "  `status` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,\n"
-						+ "  `requestType` varchar(40) DEFAULT NULL,\n"
-						+ "  `comment` varchar(500) DEFAULT NULL,\n"
-						+ "  `userComment` varchar(50) DEFAULT NULL,\n"
-						+ "  PRIMARY KEY (`email`,`createdOn`)\n"
-						+ ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;;") };
+						+ "  `requestType` varchar(40) DEFAULT NULL,\n" + "  `comment` varchar(500) DEFAULT NULL,\n"
+						+ "  `userComment` varchar(50) DEFAULT NULL,\n" + "  `proposedPrice` int DEFAULT NULL,\n"
+						+ "  PRIMARY KEY (`quoteRequestID`,`treeID`)\n"
+						+ ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;") };
 
 		String[] TUPLES = {
-
-				"INSERT INTO `QuoteRequest` (`email`, `createdOn`, `description`, `status`, `requestType`, `comment`, `userComment`)\n"
+				"INSERT INTO `QuoteRequest` (`email`, `createdOn`, `quoteRequestID`, `treeID`, `description`, `status`, `requestType`, `comment`, `userComment`, `proposedPrice`)\n"
 						+ "VALUES\n"
-						+ "	('jo@gmail.com', '2023-01-01 23:51:01', 'ChangeTime to Mon 23', 'UNDER_CONSIDERATION', 'RESCHEDULE', 'Need more time to reconsider until Feburary 8', 'NO_USER_COMMENTS_YET'),\n"
-						+ "	('jo@gmail.com', '2023-01-01 23:51:02', 'ChangeLocation to Kirby Street', 'UNDER_CONSIDERATION', 'RELOCATE','Need more time to reconsider until Feburary 8','NO_USER_COMMENTS_YET'),\n"
-						+ "	('jo@gmail.com', '2023-01-03 23:51:03', 'ChangeTime to Mon 24', 'UNDER_CONSIDERATION', 'RELOCATE','NO_COMMENTS_YET','NO_USER_COMMENTS_YET'),\n"
-						+ "	('c@gmail.com', '2023-01-01 23:51:00', 'Give 15% discount. REMARKS:- Foliage dense, will consider 8%, refile', 'REFILE', 'NEGOTIATE_PRICE','Refile with new quote request','NO_USER_COMMENTS_YET'),\n"
-						+ "	('e@gmail.com', '2023-01-02 23:51:00', 'ChangeTime to Tue 26. REMARKS:- Schedule free on 29', 'REJECTED', 'ANCILLARY_TASK','NO_COMMENTS_YET','NO_USER_COMMENTS_YET'),\n"
-						+ "	('f@gmail.com', '2023-01-02 23:51:00', 'change location to Devil\\'s Inn', 'UNDER_CONSIDERATION', 'RELOCATION','Need more time to reconsider until Feburary 8','NO_USER_COMMENTS_YET'),\n"
-						+ "	('g.gmail.com', '2023-01-02 23:51:00', 'change location to Mount Fishmore', 'UNDER_CONSIDERATION', 'RELOCATION','NO_COMMENTS_YET','NO_USER_COMMENTS_YET'),\n"
-						+ "	('h.gmail.com', '2023-01-02 23:51:00', 'change location to Downtown Dumpyard', 'UNDER_CONSIDERATION', 'RELOCATION','NO_COMMENTS_YET','NO_USER_COMMENTS_YET');\n"
+						+ "	('amelia@gmail.com', '2023-01-02 23:51:00', 10, 10, 'ChangeTime to Tue 26. REMARKS:- Schedule free on 29', 'REJECTED', 'ANCILLARY_TASK', 'NO_COMMENTS_YET', 'NO_USER_COMMENTS_YET', 23),\n"
+						+ "	('rudy@gmail.com', '2023-01-02 23:51:00', 13, 4, 'change location to Downtown Dumpyard', 'UNDER_CONSIDERATION', 'RELOCATION', 'NO_COMMENTS_YET', 'NO_USER_COMMENTS_YET', 34),\n"
+						+ "	('jo@gmail.com', '2023-01-01 23:51:01', 14, 5, 'ChangeTime to Mon 23', 'PENDING', 'RESCHEDULE', 'Need more time to reconsider until Feburary 8', 'NO_USER_COMMENTS_YET', 44),\n"
+						+ "	('jo@gmail.com', '2023-01-01 23:51:02', 14, 6, 'ChangeLocation to Kirby Street', 'UNDER_CONSIDERATION', 'RELOCATE', 'Need more time to reconsider until Feburary 8', 'NO_USER_COMMENTS_YET', 12),\n"
+						+ "	('jo@gmail.com', '2023-01-03 23:51:03', 14, 7, 'ChangeTime to Mon 24', 'PENDING', 'RELOCATE', 'NO_COMMENTS_YET', 'NO_USER_COMMENTS_YET', 24),\n"
+						+ "	('jo@gmail.com', '2023-11-07 01:33:46', 17, 1, 'Cut tree on porch', 'PENDING', 'RESCHEDULE', 'Will do it', 'Noegotiate for 3 dollars', 12),\n"
+						+ "	('jo@gmail.com', '2023-11-07 01:33:46', 18, 2, 'Cut tree on porch', 'PENDING', 'RESCHEDULE', 'Will do it', 'Noegotiate for 3 dollars', 45),\n"
+						+ "	('jo@gmail.com', '2023-12-04 15:29:09', 19, 32, 'gweg', 'PENDING', 'RESCHEDULE', 'NO_COMMENT_YET', 'NO_USER_COMMENTS_YET', 12),\n"
+						+ "	('jo@gmail.com', '2023-12-04 15:29:50', 20, 33, 'fgweg', 'PENDING', 'RESCHEDULE', 'NO_COMMENT_YET', 'NO_USER_COMMENTS_YET', 12),\n"
+						+ "	('jo@gmail.com', '2023-12-04 15:44:55', 21, 36, 'wegweg', 'PENDING', 'RESCHEDULE', 'NO_COMMENT_YET', 'NO_USER_COMMENTS_YET', 4124),\n"
+						+ "	('jo@gmail.com', '2023-12-04 15:45:41', 22, 37, 'wegweg', 'PENDING', 'RESCHEDULE', 'NO_COMMENT_YET', 'NO_USER_COMMENTS_YET', 4124),\n"
+						+ "	('jo@gmail.com', '2023-12-04 15:45:49', 23, 38, 'wegweg', 'PENDING', 'RESCHEDULE', 'NO_COMMENT_YET', 'NO_USER_COMMENTS_YET', 4124),\n"
+						+ "	('jo@gmail.com', '2023-12-04 20:12:01', 24, 39, 'gwegwegweg', 'PENDING', 'RESCHEDULE', 'NO_COMMENT_YET', 'NO_USER_COMMENTS_YET', 4124),\n"
+						+ "	('jo@gmail.com', '2023-12-04 20:19:44', 25, 40, 'gweg', 'PENDING', 'RESCHEDULE', 'NO_COMMENT_YET', 'NO_USER_COMMENTS_YET', 4214),\n"
+						+ "	('jo@gmail.com', '2023-12-04 20:20:21', 26, 41, 'erhhrwerh', 'PENDING', 'RESCHEDULE', 'NO_COMMENT_YET', 'can do', 547);\n"
 						+ "" };
 		// for loop to put these in database
 		for (int i = 0; i < INITIAL.length; i++)

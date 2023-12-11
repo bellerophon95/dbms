@@ -18,4 +18,7 @@ public class QuoteRequest {
 	private String status;
 	private String comment;
 	private String userComment;
+	private Integer treeID;
+	private Integer quoteRequestID;
+	private Integer proposedPrice;
 }

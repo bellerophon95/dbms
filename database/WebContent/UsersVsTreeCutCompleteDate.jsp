@@ -5,7 +5,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>List of Quotes</title>
+<title>All User list</title>
 <style>
 body {
 	font-family: Arial, sans-serif;
@@ -31,7 +31,7 @@ th, td {
 }
 
 th {
-	background-color: #2ecc71; /* Updated green color for header */
+	background-color: #27ae60; /* Adjusted green color for header */
 	color: #fff;
 }
 
@@ -46,7 +46,7 @@ a {
 	padding: 10px 20px;
 	text-decoration: none;
 	color: #fff;
-	background-color: tomato;
+	background-color: #3498db;
 	border: none;
 	border-radius: 5px;
 	text-align: center;
@@ -62,32 +62,29 @@ a:hover {
 	<div align="center">
 		<table border="1" cellpadding="5">
 			<caption>
-				<h2>List of Quotes</h2>
+				<h2>Users Vs Trees Cut Complete Date</h2>
 			</caption>
 			<tr>
 				<th>Email</th>
-				<th>Created Time</th>
-				<th>Description</th>
-				<th>Status</th>
-				<th>Request Type</th>
+				<th>First Name</th>
+				<th>Last Name</th>
 				<th>Tree ID</th>
+				<th>Completed On</th>
 			</tr>
-			<c:forEach var="quote" items="${quotes}">
+			<c:forEach var="usersVsTreeCutCompleteDateItem"
+				items="${usersVsTreeCutCompleteDateItems}">
 				<tr style="text-align: center">
-					<td><c:out value="${quote.email}" /></td>
-					<td><c:out value="${quote.createdTime}" /></td>
-					<td><c:out value="${quote.description}" /></td>
-					<td><c:out value="${quote.status}" /></td>
-					<td><c:out value="${quote.requestType}" /></td>
-					<td><c:out value="${quote.treeID}" /></td>
-					<td><a class="actionButton"
-						href="/database/workOrder/new?treeID=${quote.treeID}&quoteCreatedTime=${quote.createdTime}
-						&email=${quote.email}&description=${quote.description}&requestType=${quote.requestType}&status=${quote.status}&comment=${quoteRequest.comment}">Create
-							Work Order</a></td>
+					<td><c:out value="${usersVsTreeCutCompleteDateItem.email}" /></td>
+					<td><c:out value="${usersVsTreeCutCompleteDateItem.firstName}" /></td>
+					<td><c:out value="${usersVsTreeCutCompleteDateItem.lastName}" /></td>
+					<td><c:out value="${usersVsTreeCutCompleteDateItem.treeID}" /></td>
+					<td><c:out
+							value="${usersVsTreeCutCompleteDateItem.completedOn}" /></td>
 				</tr>
 			</c:forEach>
 		</table>
-		<a href="/database/quoteRequest" target="_self">Quote requests</a>
+		<a href="/database/quoteRequest" target="_self">Go to Quote
+			Requests Home</a>
 	</div>
 </body>
 </html>

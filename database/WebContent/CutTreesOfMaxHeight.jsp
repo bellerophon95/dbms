@@ -5,7 +5,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>List of Quotes</title>
+<title>All User list</title>
 <style>
 body {
 	font-family: Arial, sans-serif;
@@ -31,7 +31,7 @@ th, td {
 }
 
 th {
-	background-color: #2ecc71; /* Updated green color for header */
+	background-color: #27ae60; /* Adjusted green color for header */
 	color: #fff;
 }
 
@@ -46,7 +46,7 @@ a {
 	padding: 10px 20px;
 	text-decoration: none;
 	color: #fff;
-	background-color: tomato;
+	background-color: #3498db;
 	border: none;
 	border-radius: 5px;
 	text-align: center;
@@ -62,32 +62,25 @@ a:hover {
 	<div align="center">
 		<table border="1" cellpadding="5">
 			<caption>
-				<h2>List of Quotes</h2>
+				<h2>List of Cut Trees of Max Height</h2>
 			</caption>
 			<tr>
-				<th>Email</th>
-				<th>Created Time</th>
-				<th>Description</th>
-				<th>Status</th>
-				<th>Request Type</th>
 				<th>Tree ID</th>
+				<th>Height</th>
+				<th>Address</th>
+				<th>Distance To House</th>
 			</tr>
-			<c:forEach var="quote" items="${quotes}">
+			<c:forEach var="cutTreeOfMaxHeight" items="${cutTreesOfMaxHeight}">
 				<tr style="text-align: center">
-					<td><c:out value="${quote.email}" /></td>
-					<td><c:out value="${quote.createdTime}" /></td>
-					<td><c:out value="${quote.description}" /></td>
-					<td><c:out value="${quote.status}" /></td>
-					<td><c:out value="${quote.requestType}" /></td>
-					<td><c:out value="${quote.treeID}" /></td>
-					<td><a class="actionButton"
-						href="/database/workOrder/new?treeID=${quote.treeID}&quoteCreatedTime=${quote.createdTime}
-						&email=${quote.email}&description=${quote.description}&requestType=${quote.requestType}&status=${quote.status}&comment=${quoteRequest.comment}">Create
-							Work Order</a></td>
+					<td><c:out value="${cutTreeOfMaxHeight.treeID}" /></td>
+					<td><c:out value="${cutTreeOfMaxHeight.height}" /></td>
+					<td><c:out value="${cutTreeOfMaxHeight.address}" /></td>
+					<td><c:out value="${cutTreeOfMaxHeight.distToHouse}" /></td>
 				</tr>
 			</c:forEach>
 		</table>
-		<a href="/database/quoteRequest" target="_self">Quote requests</a>
+		<a href="/database/quoteRequest" target="_self">Go to Quote
+			Requests Home</a>
 	</div>
 </body>
 </html>

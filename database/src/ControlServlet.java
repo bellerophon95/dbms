@@ -1,9 +1,15 @@
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -14,6 +20,8 @@ import javax.servlet.http.HttpSession;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class ControlServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -28,6 +36,8 @@ public class ControlServlet extends HttpServlet {
 	private BillNegotiationRequestDAO BillNegotiationRequestDAO;
 	private TreeDAO TreeDAO;
 	private SimpleDateFormat formatter;
+	private AnalyticsDAO analyticsDAO;
+	private TreeDAO treeDAO;
 
 	public ControlServlet() {
 
@@ -42,6 +52,8 @@ public class ControlServlet extends HttpServlet {
 		BillNegotiationRequestDAO = new BillNegotiationRequestDAO();
 		formatter = new SimpleDateFormat("yyyy-mm-dd hh:mm:ss", Locale.ENGLISH);
 		TreeDAO = new TreeDAO();
+		analyticsDAO = new AnalyticsDAO();
+		treeDAO = new TreeDAO();
 		currentUser = null;
 
 	}
@@ -87,13 +99,96 @@ public class ControlServlet extends HttpServlet {
 				System.out.println("The action is: list quotes");
 				listQuotes(request, response);
 				break;
+			case "/workOrder":
+				System.out.println("The action is: list quotes");
+				listWorkOrders(request, response);
+			case "/workOrder/new":
+				System.out.println("The action is: list quotes");
+				newWorkOrderRequests(request, response);
+				break;
+			case "/workOrder/insert":
+				System.out.println("The action is: list quotes");
+				insertWorkOrder(request, response);
+				break;
 			case "/quoteRequest":
 				System.out.println("The action is: list quotes");
 				listQuoteRequests(request, response);
 				break;
+			case "/bill":
+				System.out.println("The action is: list quotes");
+				listBills(request, response);
+				break;
+			case "/bill/new":
+				System.out.println("The action is: list quotes");
+				newBill(request, response);
+				break;
+			case "/bill/insert":
+				System.out.println("The action is: list quotes");
+				insertBill(request, response);
+				break;
+			case "/analytics":
+				System.out.println("The action is: list quotes");
+				analytics(request, response);
+				break;
+			case "/analytics/easyClients":
+				System.out.println("The action is: list quotes");
+				easyClients(request, response);
+				break;
+			case "/analytics/badClients":
+				System.out.println("The action is: list quotes");
+				badClients(request, response);
+				break;
+			case "/analytics/goodClients":
+				System.out.println("The action is: list quotes");
+				goodClients(request, response);
+				break;
+			case "/analytics/cutTreesOfMaxHeight":
+				System.out.println("The action is: list quotes");
+				cutTreesOfMaxHeight(request, response);
+				break;
+			case "/analytics/overdueBills":
+				System.out.println("The action is: list quotes");
+				overdueBills(request, response);
+				break;
+			case "/analytics/usersVsAmountDueItems":
+				System.out.println("The action is: list quotes");
+				usersVsAmountDueItems(request, response);
+				break;
+			case "/analytics/acceptedQuotesWithOneTree":
+				System.out.println("The action is: list quotes");
+				acceptedQuotesWithOneTree(request, response);
+				break;
+			case "/analytics/usersVsTreesCompletelyCutDate":
+				System.out.println("The action is: list quotes");
+				usersVsTreesCompletelyCutDate(request, response);
+				break;
+			case "/analytics/usersVsTreesAlreadyCut":
+				System.out.println("The action is: list quotes");
+				usersVsTreesAlreadyCut(request, response);
+				break;
+			case "/analytics/usersVsAmountPaidItems":
+				System.out.println("The action is: list quotes");
+				usersVsAmountPaidItems(request, response);
+				break;
+			case "/analytics/bigClients":
+				System.out.println("The action is: list quotes");
+				bigClients(request, response);
+				break;
+			case "/analytics/prospectiveClients":
+				System.out.println("The action is: list quotes");
+				prospectiveClients(request, response);
+				break;
 			case "/client/quoteRequest":
 				System.out.println("The action is: list quotes");
 				listClientQuoteRequests(request, response);
+				break;
+			case "/client/bill":
+				System.out.println("The action is: list quotes");
+				listClientBills(request, response);
+				break;
+			case "/client/billNegotiationRequest":
+				System.out.println("The action is: list quotes");
+				listClientBillNegotiationRequests(request, response);
 				break;
 			case "/client/quoteRequest/new":
 				System.out.println("The action is: list quotes");
@@ -160,6 +255,18 @@ public class ControlServlet extends HttpServlet {
 		System.out.println("listPeople finished: 111111111111111111111111111111111111");
 	}
 
+	private void listWorkOrders(HttpServletRequest request, HttpServletResponse response)
+			throws SQLException, IOException, ServletException {
+		System.out.println("listQuoteRequest started: 00000000000000000000000000000000000");
+
+		List<WorkOrder> workOrders = WorkOrderDAO.listWorkOrders();
+		request.setAttribute("workOrders", workOrders);
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/WorkOrder.jsp");
+		dispatcher.forward(request, response);
+
+		System.out.println("quotesList finished: 111111111111111111111111111111111111");
+	}
+
 	private void listQuotes(HttpServletRequest request, HttpServletResponse response)
 			throws SQLException, IOException, ServletException {
 		System.out.println("listQuoteRequest started: 00000000000000000000000000000000000");
@@ -170,6 +277,69 @@ public class ControlServlet extends HttpServlet {
 		dispatcher.forward(request, response);
 
 		System.out.println("quotesList finished: 111111111111111111111111111111111111");
+	}
+
+	private void listClientBillNegotiationRequests(HttpServletRequest request, HttpServletResponse response)
+			throws SQLException, IOException, ServletException {
+		System.out.println("listQuoteRequest started: 00000000000000000000000000000000000");
+
+		List<BillNegotiationRequest> clientBillNegotiationRequests = BillNegotiationRequestDAO
+				.listClientBillNegotiationRequests(currentUser);
+		request.setAttribute("clientBillNegotiationRequests", clientBillNegotiationRequests);
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/ClientBillsNegotiationRequest.jsp");
+		dispatcher.forward(request, response);
+
+		System.out.println("quotesRequestList finished: 111111111111111111111111111111111111");
+	}
+
+	private void listBills(HttpServletRequest request, HttpServletResponse response)
+			throws SQLException, IOException, ServletException {
+		System.out.println("listQuoteRequest started: 00000000000000000000000000000000000");
+
+		List<Bill> bills = BillDAO.listBills();
+		request.setAttribute("bills", bills);
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/Bills.jsp");
+		dispatcher.forward(request, response);
+
+		System.out.println("quotesRequestList finished: 111111111111111111111111111111111111");
+	}
+
+	private void listClientBills(HttpServletRequest request, HttpServletResponse response)
+			throws SQLException, IOException, ServletException {
+		System.out.println("listQuoteRequest started: 00000000000000000000000000000000000");
+
+		List<Bill> clientBills = BillDAO.listClientBills(currentUser);
+		request.setAttribute("clientBills", clientBills);
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/ClientBills.jsp");
+		dispatcher.forward(request, response);
+
+		System.out.println("quotesRequestList finished: 111111111111111111111111111111111111");
+	}
+
+	private void newBill(HttpServletRequest request, HttpServletResponse response)
+			throws SQLException, IOException, ServletException {
+		System.out.println("listQuoteRequest started: 00000000000000000000000000000000000");
+
+		request.setAttribute("email", request.getParameter("email"));
+		request.setAttribute("createdTime", request.getParameter("createdOn"));
+		request.setAttribute("treeID", request.getParameter("treeID"));
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/NewBill.jsp");
+		dispatcher.forward(request, response);
+
+		System.out.println("quotesRequestList finished: 111111111111111111111111111111111111");
+	}
+
+	private void newWorkOrderRequests(HttpServletRequest request, HttpServletResponse response)
+			throws SQLException, IOException, ServletException {
+		System.out.println("listQuoteRequest started: 00000000000000000000000000000000000");
+	
+		request.setAttribute("email", request.getParameter("email"));
+		request.setAttribute("createdTime", request.getParameter("quoteCreatedTime"));
+		request.setAttribute("treeID", request.getParameter("treeID"));
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/NewWorkOrder.jsp");
+		dispatcher.forward(request, response);
+
+		System.out.println("quotesRequestList finished: 111111111111111111111111111111111111");
 	}
 
 	private void listClientQuoteNewRequests(HttpServletRequest request, HttpServletResponse response)
@@ -196,6 +366,214 @@ public class ControlServlet extends HttpServlet {
 		dispatcher.forward(request, response);
 
 		System.out.println("quotesRequestList finished: 111111111111111111111111111111111111");
+	}
+
+	private void analytics(HttpServletRequest request, HttpServletResponse response)
+			throws SQLException, IOException, ServletException {
+		System.out.println("listQuoteRequest started: 00000000000000000000000000000000000");
+
+		List<user> easyClients = analyticsDAO.easyClients();
+		List<Quote> acceptedQuotesWithOneTree = analyticsDAO.acceptedQuotesWithOneTree();
+		List<Quote> acceptedQuotesWithMoreThanOneTree = analyticsDAO.acceptedQuotesWithMoreThanOneTree();
+		List<user> badClients = analyticsDAO.badClients();
+		List<user> goodClients = analyticsDAO.goodClients();
+		List<user> prospectiveClients = analyticsDAO.prospectiveClients();
+		List<Bill> overdueBills = analyticsDAO.overdueBills();
+		List<Tree> cutTreesOfMaxHeight = analyticsDAO.cutTreesOfMaxHeight();
+		List<UserVsMaxTreeCountGroupBy> userVsMaxTreeCountGroupByItems = analyticsDAO.bigClients();
+		List<UsersVsAmountDueGroupBy> usersVsAmountDueItems = analyticsDAO.usersVsAmountDue();
+		List<UsersVsAmountPaidGroupBy> usersVsAmountPaidItems = analyticsDAO.usersVsAmountPaid();
+		List<UsersVsTreesAlreadyCutGroupBy> usersVsTreesAlreadyCutItems = analyticsDAO.usersVsTreesAlreadyCut();
+		List<UsersVsTreeCutCompleteDateGroupBy> usersVsTreeCutCompleteDateItems = analyticsDAO
+				.usersVsTreesCompletelyCutDate();
+
+		request.setAttribute("easyClients", easyClients);
+		request.setAttribute("badClients", badClients);
+		request.setAttribute("prospectiveClients", prospectiveClients);
+		request.setAttribute("acceptedQuotesWithOneTree", acceptedQuotesWithOneTree);
+		request.setAttribute("acceptedQuotesWithMoreThanOneTree", acceptedQuotesWithMoreThanOneTree);
+		request.setAttribute("overdueBills", overdueBills);
+		request.setAttribute("goodClients", goodClients);
+		request.setAttribute("cutTreesOfMaxHeight", cutTreesOfMaxHeight);
+		request.setAttribute("userVsMaxTreeCountGroupByItems", userVsMaxTreeCountGroupByItems);
+		request.setAttribute("usersVsAmountDueItems", usersVsAmountDueItems);
+		request.setAttribute("usersVsAmountPaidItems", usersVsAmountPaidItems);
+		request.setAttribute("usersVsTreesAlreadyCutItems", usersVsTreesAlreadyCutItems);
+		request.setAttribute("usersVsTreeCutCompleteDateItems", usersVsTreeCutCompleteDateItems);
+
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/Analytics.jsp");
+		dispatcher.forward(request, response);
+
+		System.out.println("analytics finished: 111111111111111111111111111111111111");
+	}
+
+	private void usersVsAmountDueItems(HttpServletRequest request, HttpServletResponse response)
+			throws SQLException, IOException, ServletException {
+		System.out.println("listQuoteRequest started: 00000000000000000000000000000000000");
+
+		List<UsersVsAmountDueGroupBy> usersVsAmountDueItems = analyticsDAO.usersVsAmountDue();
+
+		request.setAttribute("usersVsAmountDueItems", usersVsAmountDueItems);
+
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/UsersVsAmountDue.jsp");
+		dispatcher.forward(request, response);
+
+		System.out.println("analytics finished: 111111111111111111111111111111111111");
+	}
+
+	private void usersVsAmountPaidItems(HttpServletRequest request, HttpServletResponse response)
+			throws SQLException, IOException, ServletException {
+		System.out.println("listQuoteRequest started: 00000000000000000000000000000000000");
+
+		List<UsersVsAmountPaidGroupBy> usersVsAmountPaidItems = analyticsDAO.usersVsAmountPaid();
+
+		request.setAttribute("usersVsAmountPaidItems", usersVsAmountPaidItems);
+
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/UsersVsAmountPaid.jsp");
+		dispatcher.forward(request, response);
+
+		System.out.println("analytics finished: 111111111111111111111111111111111111");
+	}
+
+	private void usersVsTreesAlreadyCut(HttpServletRequest request, HttpServletResponse response)
+			throws SQLException, IOException, ServletException {
+		System.out.println("listQuoteRequest started: 00000000000000000000000000000000000");
+
+		List<UsersVsTreesAlreadyCutGroupBy> usersVsTreesAlreadyCutItems = analyticsDAO.usersVsTreesAlreadyCut();
+
+		request.setAttribute("usersVsTreesAlreadyCutItems", usersVsTreesAlreadyCutItems);
+
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/UsersVsTreesAlreadyCut.jsp");
+		dispatcher.forward(request, response);
+
+		System.out.println("analytics finished: 111111111111111111111111111111111111");
+	}
+
+	private void usersVsTreesCompletelyCutDate(HttpServletRequest request, HttpServletResponse response)
+			throws SQLException, IOException, ServletException {
+		System.out.println("listQuoteRequest started: 00000000000000000000000000000000000");
+
+		List<UsersVsTreeCutCompleteDateGroupBy> usersVsTreeCutCompleteDateItems = analyticsDAO
+				.usersVsTreesCompletelyCutDate();
+
+		request.setAttribute("usersVsTreeCutCompleteDateItems", usersVsTreeCutCompleteDateItems);
+
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/UsersVsTreeCutCompleteDate.jsp");
+		dispatcher.forward(request, response);
+
+		System.out.println("analytics finished: 111111111111111111111111111111111111");
+	}
+
+	private void bigClients(HttpServletRequest request, HttpServletResponse response)
+			throws SQLException, IOException, ServletException {
+		System.out.println("listQuoteRequest started: 00000000000000000000000000000000000");
+
+		List<UserVsMaxTreeCountGroupBy> bigClients = analyticsDAO.bigClients();
+
+		request.setAttribute("bigClients", bigClients);
+
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/BigClients.jsp");
+		dispatcher.forward(request, response);
+
+		System.out.println("analytics finished: 111111111111111111111111111111111111");
+	}
+
+	private void cutTreesOfMaxHeight(HttpServletRequest request, HttpServletResponse response)
+			throws SQLException, IOException, ServletException {
+		System.out.println("listQuoteRequest started: 00000000000000000000000000000000000");
+
+		List<Tree> cutTreesOfMaxHeight = analyticsDAO.cutTreesOfMaxHeight();
+
+		request.setAttribute("cutTreesOfMaxHeight", cutTreesOfMaxHeight);
+
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/CutTreesOfMaxHeight.jsp");
+		dispatcher.forward(request, response);
+
+		System.out.println("analytics finished: 111111111111111111111111111111111111");
+	}
+
+	private void acceptedQuotesWithOneTree(HttpServletRequest request, HttpServletResponse response)
+			throws SQLException, IOException, ServletException {
+		System.out.println("listQuoteRequest started: 00000000000000000000000000000000000");
+
+		List<Quote> acceptedQuotesWithOneTree = analyticsDAO.acceptedQuotesWithOneTree();
+
+		request.setAttribute("acceptedQuotesWithOneTree", acceptedQuotesWithOneTree);
+
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/AcceptedQuotesWithOneTree.jsp");
+		dispatcher.forward(request, response);
+
+		System.out.println("analytics finished: 111111111111111111111111111111111111");
+	}
+
+	private void prospectiveClients(HttpServletRequest request, HttpServletResponse response)
+			throws SQLException, IOException, ServletException {
+		System.out.println("listQuoteRequest started: 00000000000000000000000000000000000");
+
+		List<user> prospectiveClients = analyticsDAO.prospectiveClients();
+
+		request.setAttribute("prospectiveClients", prospectiveClients);
+
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/ProspectiveClients.jsp");
+		dispatcher.forward(request, response);
+
+		System.out.println("analytics finished: 111111111111111111111111111111111111");
+	}
+
+	private void overdueBills(HttpServletRequest request, HttpServletResponse response)
+			throws SQLException, IOException, ServletException {
+		System.out.println("listQuoteRequest started: 00000000000000000000000000000000000");
+
+		List<Bill> overdueBills = analyticsDAO.overdueBills();
+
+		request.setAttribute("overdueBills", overdueBills);
+
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/OverdueBills.jsp");
+		dispatcher.forward(request, response);
+
+		System.out.println("analytics finished: 111111111111111111111111111111111111");
+	}
+
+	private void goodClients(HttpServletRequest request, HttpServletResponse response)
+			throws SQLException, IOException, ServletException {
+		System.out.println("listQuoteRequest started: 00000000000000000000000000000000000");
+
+		List<user> goodClients = analyticsDAO.goodClients();
+
+		request.setAttribute("goodClients", goodClients);
+
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/GoodClients.jsp");
+		dispatcher.forward(request, response);
+
+		System.out.println("analytics finished: 111111111111111111111111111111111111");
+	}
+
+	private void badClients(HttpServletRequest request, HttpServletResponse response)
+			throws SQLException, IOException, ServletException {
+		System.out.println("listQuoteRequest started: 00000000000000000000000000000000000");
+
+		List<user> badClients = analyticsDAO.badClients();
+
+		request.setAttribute("badClients", badClients);
+
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/BadClients.jsp");
+		dispatcher.forward(request, response);
+
+		System.out.println("analytics finished: 111111111111111111111111111111111111");
+	}
+
+	private void easyClients(HttpServletRequest request, HttpServletResponse response)
+			throws SQLException, IOException, ServletException {
+		System.out.println("listQuoteRequest started: 00000000000000000000000000000000000");
+
+		List<user> easyClients = analyticsDAO.easyClients();
+
+		request.setAttribute("easyClients", easyClients);
+
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/EasyClients.jsp");
+		dispatcher.forward(request, response);
+
+		System.out.println("analytics finished: 111111111111111111111111111111111111");
 	}
 
 	private void listQuoteRequests(HttpServletRequest request, HttpServletResponse response)
@@ -266,15 +644,70 @@ public class ControlServlet extends HttpServlet {
 	private void insertClientQuoteRequest(HttpServletRequest request, HttpServletResponse response)
 			throws SQLException, IOException, ServletException, ParseException {
 		System.out.println("insertQuote started: 00000000000000000000000000000000000");
-		quoteRequestDAO.insertQuoteRequest(
-				QuoteRequest.builder().email(request.getParameter("email")).comment(request.getParameter("comment"))
-						.createdOn(new java.sql.Timestamp(Calendar.getInstance().getTimeInMillis()).toString())
-						.description(request.getParameter("description")).status("PENDING")
-						.requestType(request.getParameter("requestType")).comment("NO_COMMENT_YET")
-						.userComment("NO_USER_COMMENTS_YET").build());
+
+		List<String> treeDistances = List.of(request.getParameter("distOfTreeToHouse").split(","));
+		List<String> treeHeights = List.of(request.getParameter("treeHeight").split(","));
+
+		int treeCount = Math.min(treeDistances.size(), treeHeights.size());
+
+		List<Integer> insertedTreeIDs = IntStream.range(0, treeCount).mapToObj(i -> {
+			Integer insertedTreeID = -1;
+			try {
+				insertedTreeID = treeDAO.insert(Tree.builder().distToHouse(Integer.valueOf(treeDistances.get(i)))
+						.address(request.getParameter("treeLocation")).height(Integer.valueOf(treeHeights.get(i)))
+						.build());
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			return insertedTreeID;
+		}).collect(Collectors.toList());
+
+		Integer currentQuoteRequestsID = quoteRequestDAO.getMaxQuoteRequestID() + 1;
+
+		for (Integer insertedTreeID : insertedTreeIDs) {
+			quoteRequestDAO.insertQuoteRequest(QuoteRequest.builder().quoteRequestID(currentQuoteRequestsID)
+					.email(request.getParameter("email")).comment(request.getParameter("comment"))
+					.createdOn(new java.sql.Timestamp(Calendar.getInstance().getTimeInMillis()).toString())
+					.description(request.getParameter("description")).status("PENDING")
+					.requestType(request.getParameter("requestType")).comment("NO_COMMENT_YET")
+					.userComment("NO_USER_COMMENTS_YET").treeID(insertedTreeID)
+					.proposedPrice(Integer.valueOf(request.getParameter("proposedPrice"))).build());
+		}
 
 		System.out.println("insert successful finished: 111111111111111111111111111111111111");
 		this.listClientQuoteRequests(request, response);
+
+		System.out.println("quotesList finished: 111111111111111111111111111111111111");
+	}
+
+	private String rfc3339ToSQLDateTime(String rfc3339DateTime) throws UnsupportedEncodingException {
+
+		String decodedString = URLDecoder.decode(rfc3339DateTime, "UTF-8");
+		DateTimeFormatter rfcFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+		LocalDateTime dateTime = LocalDateTime.parse(decodedString, rfcFormatter);
+
+		DateTimeFormatter sqlFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+		return dateTime.format(sqlFormatter);
+	}
+
+	private void insertWorkOrder(HttpServletRequest request, HttpServletResponse response)
+			throws SQLException, IOException, ServletException, ParseException {
+		System.out.println("insertQuote started: 00000000000000000000000000000000000");
+		String email = request.getParameter("email");
+		String createdOn = request.getParameter("quoteCreatedTime");
+		Integer treeID = Integer.valueOf(request.getParameter("treeID"));
+		String dueDate = rfc3339ToSQLDateTime(request.getParameter("dueDate"));
+		String description = request.getParameter("description");
+		String orderStatus = "PENDING";
+
+		quoteDAO.delete(email, createdOn);
+
+		WorkOrderDAO.insertWorkOrder(WorkOrder.builder().email(email).createdOn(createdOn).treeID(treeID)
+				.dueDate(dueDate).description(description).orderStatus(orderStatus).build());
+
+		System.out.println("insert successful finished: 111111111111111111111111111111111111");
+		this.listWorkOrders(request, response);
 
 		System.out.println("quotesList finished: 111111111111111111111111111111111111");
 	}
@@ -287,10 +720,29 @@ public class ControlServlet extends HttpServlet {
 		quoteRequestDAO.insertQuoteRequest(QuoteRequest.builder().email("root@gmail.com")
 				.createdOn(new java.sql.Timestamp(Calendar.getInstance().getTimeInMillis()).toString())
 				.description(request.getParameter("description")).comment(commentToBeInserted)
-				.status("UNDER_CONSIDERATION").requestType(request.getParameter("requestType")).build());
+				.status("UNDER_CONSIDERATION").requestType(request.getParameter("requestType"))
+				.proposedPrice(Integer.valueOf(request.getParameter("proposedPrice"))).build());
 
 		System.out.println("insert successful finished: 111111111111111111111111111111111111");
 		this.listQuoteRequests(request, response);
+
+		System.out.println("quotesList finished: 111111111111111111111111111111111111");
+	}
+
+	private void insertBill(HttpServletRequest request, HttpServletResponse response)
+			throws SQLException, IOException, ServletException, ParseException {
+		System.out.println("insertQuote started: 00000000000000000000000000000000000");
+		
+		String createdOn = request.getParameter("createdTime");
+		WorkOrderDAO.delete(request.getParameter("email"), createdOn);
+		
+		BillDAO.insertBill(Bill.builder().email(request.getParameter("email"))
+				.raisedOn((new java.sql.Timestamp(Calendar.getInstance().getTimeInMillis())).toString())
+				.amount(Integer.valueOf(request.getParameter("amount"))).dueDate(request.getParameter("dueDate"))
+				.settledOn(null).paymentStatus("UNPAID").build());
+
+		System.out.println("insert successful finished: 111111111111111111111111111111111111");
+		this.listBills(request, response);
 
 		System.out.println("quotesList finished: 111111111111111111111111111111111111");
 	}

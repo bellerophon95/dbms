@@ -120,173 +120,30 @@ public class BillNegotiationRequestDAO {
 		}
 	}
 
-	public void insert(user users) throws SQLException {
-		connect_func("root", "pass1234");
-		String sql = "insert into User(email, firstName, lastName, password, birthday,adress_street_num, adress_street,adress_city,adress_state,adress_zip_code,cash_bal,PPS_bal, role) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,?, ?)";
-		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, users.getEmail());
-		preparedStatement.setString(2, users.getFirstName());
-		preparedStatement.setString(3, users.getLastName());
-		preparedStatement.setString(4, users.getPassword());
-		preparedStatement.setString(5, users.getBirthday());
-		preparedStatement.setString(6, users.getAdress_street_num());
-		preparedStatement.setString(7, users.getAdress_street());
-		preparedStatement.setString(8, users.getAdress_city());
-		preparedStatement.setString(9, users.getAdress_state());
-		preparedStatement.setString(10, users.getAdress_zip_code());
-		preparedStatement.setInt(11, users.getCash_bal());
-		preparedStatement.setInt(12, users.getPPS_bal());
-		preparedStatement.setString(13, users.getRole());
-
-		preparedStatement.executeUpdate();
-		preparedStatement.close();
-	}
-
-	public boolean delete(String email) throws SQLException {
-		String sql = "DELETE FROM User WHERE email = ?";
-		connect_func();
-
-		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, email);
-
-		boolean rowDeleted = preparedStatement.executeUpdate() > 0;
-		preparedStatement.close();
-		return rowDeleted;
-	}
-
-	public boolean update(user users) throws SQLException {
-		String sql = "update User set firstName=?, lastName =?,password = ?,birthday=?,adress_street_num =?, adress_street=?,adress_city=?,adress_state=?,adress_zip_code=?, cash_bal=?, PPS_bal =? where email = ?";
-		connect_func();
-
-		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, users.getEmail());
-		preparedStatement.setString(2, users.getFirstName());
-		preparedStatement.setString(3, users.getLastName());
-		preparedStatement.setString(4, users.getPassword());
-		preparedStatement.setString(5, users.getBirthday());
-		preparedStatement.setString(6, users.getAdress_street_num());
-		preparedStatement.setString(7, users.getAdress_street());
-		preparedStatement.setString(8, users.getAdress_city());
-		preparedStatement.setString(9, users.getAdress_state());
-		preparedStatement.setString(10, users.getAdress_zip_code());
-		preparedStatement.setInt(11, users.getCash_bal());
-		preparedStatement.setInt(12, users.getPPS_bal());
-
-		boolean rowUpdated = preparedStatement.executeUpdate() > 0;
-		preparedStatement.close();
-		return rowUpdated;
-	}
-
-	public user getUser(String email) throws SQLException {
-		user user = null;
-		String sql = "SELECT * FROM User WHERE email = ?";
+	public List<BillNegotiationRequest> listClientBillNegotiationRequests(user user) throws SQLException {
+		String sql = "SELECT * FROM BillNegotiationRequest WHERE email = ? ";
+		List<BillNegotiationRequest> billNegotiationRequests = new ArrayList<>();
 
 		connect_func();
 
 		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, email);
+		preparedStatement.setString(1, user.getEmail());
 
 		ResultSet resultSet = preparedStatement.executeQuery();
 
-		if (resultSet.next()) {
-			String firstName = resultSet.getString("firstName");
-			String lastName = resultSet.getString("lastName");
-			String password = resultSet.getString("password");
-			String birthday = resultSet.getString("birthday");
-			String adress_street_num = resultSet.getString("adress_street_num");
-			String adress_street = resultSet.getString("adress_street");
-			String adress_city = resultSet.getString("adress_city");
-			String adress_state = resultSet.getString("adress_state");
-			String adress_zip_code = resultSet.getString("adress_zip_code");
-			int cash_bal = resultSet.getInt("cash_bal");
-			int PPS_bal = resultSet.getInt("PPS_bal");
-			user = new user(email, firstName, lastName, password, birthday, adress_street_num, adress_street,
-					adress_city, adress_state, adress_zip_code, cash_bal, PPS_bal);
+		while (resultSet.next()) {
+			billNegotiationRequests.add(BillNegotiationRequest.builder().createdOn(resultSet.getString("createdOn"))
+					.description(resultSet.getString("description"))
+					.quoteRequestID(Integer.valueOf(resultSet.getString("quoteRequestID")))
+					.email(resultSet.getString("email")).requestType(resultSet.getString("requestType"))
+					.status(resultSet.getString("status")).build());
+
 		}
 
 		resultSet.close();
-		statement.close();
+//		statement.close();
 
-		return user;
-	}
-
-	public boolean checkEmail(String email) throws SQLException {
-		boolean checks = false;
-		String sql = "SELECT * FROM User WHERE email = ?";
-		connect_func();
-		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, email);
-		ResultSet resultSet = preparedStatement.executeQuery();
-
-		System.out.println(checks);
-
-		if (resultSet.next()) {
-			checks = true;
-		}
-
-		System.out.println(checks);
-		return checks;
-	}
-
-	public boolean checkAddress(String adress_street_num, String adress_street, String adress_city, String adress_state,
-			String adress_zip_code) throws SQLException {
-		boolean checks = false;
-		String sql = "SELECT * FROM User WHERE adress_street_num = ? AND adress_street = ? AND adress_city = ? AND adress_state = ? AND adress_zip_code = ?";
-		connect_func();
-		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, adress_street_num);
-		preparedStatement.setString(2, adress_street);
-		preparedStatement.setString(3, adress_city);
-		preparedStatement.setString(4, adress_state);
-		preparedStatement.setString(5, adress_zip_code);
-		ResultSet resultSet = preparedStatement.executeQuery();
-
-		System.out.println(checks);
-
-		if (resultSet.next()) {
-			checks = true;
-		}
-
-		System.out.println(checks);
-		return checks;
-	}
-
-	public boolean checkPassword(String password) throws SQLException {
-		boolean checks = false;
-		String sql = "SELECT * FROM User WHERE password = ?";
-		connect_func();
-		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, password);
-		ResultSet resultSet = preparedStatement.executeQuery();
-
-		System.out.println(checks);
-
-		if (resultSet.next()) {
-			checks = true;
-		}
-
-		System.out.println(checks);
-		return checks;
-	}
-
-	public boolean isValid(String email, String password) throws SQLException {
-		String sql = "SELECT * FROM User";
-		connect_func();
-		statement = (Statement) connect.createStatement();
-		ResultSet resultSet = statement.executeQuery(sql);
-
-		resultSet.last();
-
-		int setSize = resultSet.getRow();
-		resultSet.beforeFirst();
-
-		for (int i = 0; i < setSize; i++) {
-			resultSet.next();
-			if (resultSet.getString("email").equals(email) && resultSet.getString("password").equals(password)) {
-				return true;
-			}
-		}
-		return false;
+		return billNegotiationRequests;
 	}
 
 	public void init() throws SQLException, FileNotFoundException, IOException {
@@ -299,22 +156,21 @@ public class BillNegotiationRequestDAO {
 						+ "  `createdOn` datetime NOT NULL,\n"
 						+ "  `description` varchar(80) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,\n"
 						+ "  `status` varchar(30) DEFAULT NULL,\n" + "  `requestType` varchar(30) DEFAULT NULL,\n"
-						+ "  PRIMARY KEY (`email`,`createdOn`)\n"
+						+ "  `quoteRequestID` int DEFAULT NULL,\n" + "  PRIMARY KEY (`email`,`createdOn`)\n"
 						+ ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;") };
 
 		String[] TUPLES = {
-
-				"INSERT INTO `BillNegotiationRequest` (`email`, `createdOn`, `description`, `status`, `requestType`)\n"
+				"INSERT INTO `BillNegotiationRequest` (`email`, `createdOn`, `description`, `status`, `requestType`, `quoteRequestID`)\n"
 						+ "VALUES\n"
-						+ "	('a@gmail.com', '2023-02-01 00:00:00', 'Negotiate down to 120', 'Pending', 'PRICE_NEGOTIATION'),\n"
-						+ "	('a@gmail.com', '2023-02-10 23:00:00', 'Negotiate down to 9900', 'Pending', 'PRICE_NEGOTIATION'),\n"
-						+ "	('b@gmail.com', '2023-02-01 00:00:00', 'Negotiate down to 120', 'Pending', 'PRICE_NEGOTIATION'),\n"
-						+ "	('c@gmail.com', '2022-12-01 00:00:00', '12 Month Suspended Payment', 'Pending', 'FINANCIAL_ARRANGEMENT'),\n"
-						+ "	('d@gmail.com', '2023-02-05 00:00:01', 'Adjust for damages, Remarks:- Fence damage', 'Accepted', 'DAMAGES'),\n"
-						+ "	('e@gmail.com', '2023-02-12 00:01:00', 'Negotiate down to 80', 'Pending', 'PRICE_NEGOTIATION'),\n"
-						+ "	('f@gmail.com', '2023-02-13 00:03:00', 'Negotiate down to 120', 'Pending', 'PRICE_NEGOTIATION'),\n"
-						+ "	('g@gmail.com', '2023-02-20 00:04:00', 'Negotiate down to 140', 'Pending', 'PRICE_NEGOTIATION'),\n"
-						+ "	('h@gmail.com', '2023-02-21 00:17:00', 'Negotiate down to 750', 'Pending', 'PRICE_NEGOTIATION');\n"
+						+ "	('amelia@gmail.com', '2023-02-10 23:00:00', 'Negotiate down to 9900', 'PENDING', 'PRICE_NEGOTIATION', 1),\n"
+						+ "	('amelia@gmail.com', '2023-02-12 00:01:00', 'Negotiate down to 80', 'PENDING', 'PRICE_NEGOTIATION', 4),\n"
+						+ "	('angelo@gmail.com', '2023-02-01 00:00:00', 'Negotiate down to 120', 'PENDING', 'PRICE_NEGOTIATION', 3),\n"
+						+ "	('jo@gmail.com', '2023-02-05 00:00:01', 'Adjust for damages, Remarks:- Fence damage', 'ACCEPTED', 'DAMAGES', 3),\n"
+						+ "	('jo@gmail.com', '2023-02-13 00:03:00', 'Negotiate down to 120', 'PENDING', 'PRICE_NEGOTIATION', 4),\n"
+						+ "	('margarita@gmail.com', '2023-02-21 00:17:00', 'Negotiate down to 750', 'PENDING', 'PRICE_NEGOTIATION', 6),\n"
+						+ "	('rudy@gmail.com', '2022-12-01 00:00:00', '12 Month Suspended Payment', 'PENDING', 'FINANCIAL_ARRANGEMENT', 9),\n"
+						+ "	('susie@gmail.com', '2023-02-01 00:00:00', 'Negotiate down to 120', 'PENDING', 'PRICE_NEGOTIATION', 6),\n"
+						+ "	('wallace@gmail.com', '2023-02-20 00:04:00', 'Negotiate down to 140', 'PENDING', 'PRICE_NEGOTIATION', 5);\n"
 						+ "" };
 		// for loop to put these in database
 		for (int i = 0; i < INITIAL.length; i++)

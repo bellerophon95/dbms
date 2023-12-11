@@ -80,66 +80,10 @@ public class BillDAO {
 		}
 	}
 
-	public List<user> listAllUsers() throws SQLException {
-		List<user> listUser = new ArrayList<user>();
-		String sql = "SELECT * FROM User";
-		connect_func();
-		statement = (Statement) connect.createStatement();
-		ResultSet resultSet = statement.executeQuery(sql);
-
-		while (resultSet.next()) {
-			String email = resultSet.getString("email");
-			String firstName = resultSet.getString("firstName");
-			String lastName = resultSet.getString("lastName");
-			String password = resultSet.getString("password");
-			String birthday = resultSet.getString("birthday");
-			String adress_street_num = resultSet.getString("adress_street_num");
-			String adress_street = resultSet.getString("adress_street");
-			String adress_city = resultSet.getString("adress_city");
-			String adress_state = resultSet.getString("adress_state");
-			String adress_zip_code = resultSet.getString("adress_zip_code");
-			int cash_bal = resultSet.getInt("cash_bal");
-			int PPS_bal = resultSet.getInt("PPS_bal");
-			String role = resultSet.getString("role");
-
-			user users = user.builder().email(email).firstName(firstName).lastName(lastName).password(password)
-					.birthday(birthday).adress_street_num(adress_street_num).adress_street(adress_street)
-					.adress_city(adress_city).adress_state(adress_state).adress_zip_code(adress_zip_code)
-					.cash_bal(cash_bal).PPS_bal(PPS_bal).role(role).build();
-//            user users = new user(email,firstName, lastName, password, birthday, adress_street_num,  adress_street,  adress_city,  adress_state,  adress_zip_code, cash_bal,PPS_bal);
-			listUser.add(users);
-		}
-		resultSet.close();
-		disconnect();
-		return listUser;
-	}
-
 	protected void disconnect() throws SQLException {
 		if (connect != null && !connect.isClosed()) {
 			connect.close();
 		}
-	}
-
-	public void insert(user users) throws SQLException {
-		connect_func("root", "pass1234");
-		String sql = "insert into User(email, firstName, lastName, password, birthday,adress_street_num, adress_street,adress_city,adress_state,adress_zip_code,cash_bal,PPS_bal, role) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,?, ?)";
-		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, users.getEmail());
-		preparedStatement.setString(2, users.getFirstName());
-		preparedStatement.setString(3, users.getLastName());
-		preparedStatement.setString(4, users.getPassword());
-		preparedStatement.setString(5, users.getBirthday());
-		preparedStatement.setString(6, users.getAdress_street_num());
-		preparedStatement.setString(7, users.getAdress_street());
-		preparedStatement.setString(8, users.getAdress_city());
-		preparedStatement.setString(9, users.getAdress_state());
-		preparedStatement.setString(10, users.getAdress_zip_code());
-		preparedStatement.setInt(11, users.getCash_bal());
-		preparedStatement.setInt(12, users.getPPS_bal());
-		preparedStatement.setString(13, users.getRole());
-
-		preparedStatement.executeUpdate();
-		preparedStatement.close();
 	}
 
 	public boolean delete(String email) throws SQLException {
@@ -154,139 +98,72 @@ public class BillDAO {
 		return rowDeleted;
 	}
 
-	public boolean update(user users) throws SQLException {
-		String sql = "update User set firstName=?, lastName =?,password = ?,birthday=?,adress_street_num =?, adress_street=?,adress_city=?,adress_state=?,adress_zip_code=?, cash_bal=?, PPS_bal =? where email = ?";
-		connect_func();
-
-		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, users.getEmail());
-		preparedStatement.setString(2, users.getFirstName());
-		preparedStatement.setString(3, users.getLastName());
-		preparedStatement.setString(4, users.getPassword());
-		preparedStatement.setString(5, users.getBirthday());
-		preparedStatement.setString(6, users.getAdress_street_num());
-		preparedStatement.setString(7, users.getAdress_street());
-		preparedStatement.setString(8, users.getAdress_city());
-		preparedStatement.setString(9, users.getAdress_state());
-		preparedStatement.setString(10, users.getAdress_zip_code());
-		preparedStatement.setInt(11, users.getCash_bal());
-		preparedStatement.setInt(12, users.getPPS_bal());
-
-		boolean rowUpdated = preparedStatement.executeUpdate() > 0;
-		preparedStatement.close();
-		return rowUpdated;
-	}
-
-	public user getUser(String email) throws SQLException {
-		user user = null;
-		String sql = "SELECT * FROM User WHERE email = ?";
+	public List<Bill> listClientBills(user user) throws SQLException {
+		String sql = "SELECT * FROM Bill WHERE email = ?";
+		List<Bill> bills = new ArrayList<>();
 
 		connect_func();
 
 		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, email);
+		preparedStatement.setString(1, user.getEmail());
 
 		ResultSet resultSet = preparedStatement.executeQuery();
 
-		if (resultSet.next()) {
-			String firstName = resultSet.getString("firstName");
-			String lastName = resultSet.getString("lastName");
-			String password = resultSet.getString("password");
-			String birthday = resultSet.getString("birthday");
-			String adress_street_num = resultSet.getString("adress_street_num");
-			String adress_street = resultSet.getString("adress_street");
-			String adress_city = resultSet.getString("adress_city");
-			String adress_state = resultSet.getString("adress_state");
-			String adress_zip_code = resultSet.getString("adress_zip_code");
-			int cash_bal = resultSet.getInt("cash_bal");
-			int PPS_bal = resultSet.getInt("PPS_bal");
-			user = new user(email, firstName, lastName, password, birthday, adress_street_num, adress_street,
-					adress_city, adress_state, adress_zip_code, cash_bal, PPS_bal);
+		while (resultSet.next()) {
+			bills.add(Bill.builder().amount(Integer.valueOf(resultSet.getString("amount")))
+					.dueDate(resultSet.getString("dueDate")).email(resultSet.getString("email"))
+					.paymentStatus(resultSet.getString("paymentStatus")).raisedOn(resultSet.getString("raisedOn"))
+					.settledOn(resultSet.getString("settledOn")).build());
+
 		}
 
 		resultSet.close();
-		statement.close();
 
-		return user;
+		return bills;
 	}
 
-	public boolean checkEmail(String email) throws SQLException {
-		boolean checks = false;
-		String sql = "SELECT * FROM User WHERE email = ?";
+	public boolean insertBill(Bill bill) throws SQLException {
+		String sql = "INSERT INTO `Bill` (`email`, `raisedOn`, `amount`, `settledOn`, `paymentStatus`, `dueDate`) VALUES\n"
+				+ "(?, ?, ?, ?, ?, ?);\n" + "";
 		connect_func();
+
 		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, email);
+		preparedStatement.setString(1, bill.getEmail());
+		preparedStatement.setString(2, bill.getRaisedOn());
+		preparedStatement.setInt(3, bill.getAmount());
+		preparedStatement.setString(4, bill.getSettledOn());
+		preparedStatement.setString(5, bill.getPaymentStatus());
+		preparedStatement.setString(6, bill.getDueDate());
+
+		Boolean wasSuccessful = preparedStatement.executeUpdate() > 0;
+
+		preparedStatement.close();
+//		statement.close();
+		return wasSuccessful;
+	}
+
+	public List<Bill> listBills() throws SQLException {
+		String sql = "SELECT * FROM Bill;";
+		List<Bill> bills = new ArrayList<>();
+
+		connect_func();
+
+		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
+
 		ResultSet resultSet = preparedStatement.executeQuery();
 
-		System.out.println(checks);
+		while (resultSet.next()) {
+			bills.add(Bill.builder().amount(Integer.valueOf(resultSet.getString("amount")))
+					.dueDate(resultSet.getString("dueDate")).email(resultSet.getString("email"))
+					.paymentStatus(resultSet.getString("paymentStatus")).raisedOn(resultSet.getString("raisedOn"))
+					.settledOn(resultSet.getString("settledOn")).build());
 
-		if (resultSet.next()) {
-			checks = true;
 		}
 
-		System.out.println(checks);
-		return checks;
-	}
+		resultSet.close();
+//		statement.close();
 
-	public boolean checkAddress(String adress_street_num, String adress_street, String adress_city, String adress_state,
-			String adress_zip_code) throws SQLException {
-		boolean checks = false;
-		String sql = "SELECT * FROM User WHERE adress_street_num = ? AND adress_street = ? AND adress_city = ? AND adress_state = ? AND adress_zip_code = ?";
-		connect_func();
-		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, adress_street_num);
-		preparedStatement.setString(2, adress_street);
-		preparedStatement.setString(3, adress_city);
-		preparedStatement.setString(4, adress_state);
-		preparedStatement.setString(5, adress_zip_code);
-		ResultSet resultSet = preparedStatement.executeQuery();
-
-		System.out.println(checks);
-
-		if (resultSet.next()) {
-			checks = true;
-		}
-
-		System.out.println(checks);
-		return checks;
-	}
-
-	public boolean checkPassword(String password) throws SQLException {
-		boolean checks = false;
-		String sql = "SELECT * FROM User WHERE password = ?";
-		connect_func();
-		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, password);
-		ResultSet resultSet = preparedStatement.executeQuery();
-
-		System.out.println(checks);
-
-		if (resultSet.next()) {
-			checks = true;
-		}
-
-		System.out.println(checks);
-		return checks;
-	}
-
-	public boolean isValid(String email, String password) throws SQLException {
-		String sql = "SELECT * FROM User";
-		connect_func();
-		statement = (Statement) connect.createStatement();
-		ResultSet resultSet = statement.executeQuery(sql);
-
-		resultSet.last();
-
-		int setSize = resultSet.getRow();
-		resultSet.beforeFirst();
-
-		for (int i = 0; i < setSize; i++) {
-			resultSet.next();
-			if (resultSet.getString("email").equals(email) && resultSet.getString("password").equals(password)) {
-				return true;
-			}
-		}
-		return false;
+		return bills;
 	}
 
 	public void init() throws SQLException, FileNotFoundException, IOException {
@@ -297,20 +174,24 @@ public class BillDAO {
 
 				("CREATE TABLE `Bill` (\n" + "  `email` varchar(20) NOT NULL,\n" + "  `raisedOn` datetime NOT NULL,\n"
 						+ "  `amount` int DEFAULT NULL,\n" + "  `settledOn` datetime DEFAULT NULL,\n"
-						+ "  `status` varchar(30) DEFAULT NULL,\n" + "  PRIMARY KEY (`email`,`raisedOn`)\n"
+						+ "  `paymentStatus` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,\n"
+						+ "  `dueDate` datetime DEFAULT NULL,\n" + "  PRIMARY KEY (`email`,`raisedOn`)\n"
 						+ ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;") };
 
-		String[] TUPLES = { "INSERT INTO `Bill` (`email`, `raisedOn`, `amount`, `settledOn`, `status`)\n" + "VALUES\n"
-				+ "	('a@gmail.com', '2023-01-22 00:00:00', 250, NULL, 'Unpaid'),\n"
-				+ "	('a@gmail.com', '2023-01-22 00:00:02', 120, '2023-01-28 16:01:00', 'Paid'),\n"
-				+ "	('b@gmail.com', '2023-01-22 00:00:02', 120, NULL, 'Unpaid'),\n"
-				+ "	('c@gmail.com', '2023-01-22 00:00:02', 120, NULL, 'Unpaid'),\n"
-				+ "	('j@gmail.com', '2023-01-22 00:00:02', 120, NULL, 'Unpaid'),\n"
-				+ "	('v@gmail.com', '2023-01-22 00:00:02', 120, NULL, 'Unpaid'),\n"
-				+ "	('w@gmail.com', '2023-01-22 00:00:00', 250, NULL, 'Unpaid'),\n"
-				+ "	('x@gmail.com', '2023-01-22 00:00:02', 120, NULL, 'Unpaid'),\n"
-				+ "	('y@gmail.com', '2023-01-22 00:00:02', 120, NULL, 'Unpaid'),\n"
-				+ "	('z@gmail.com', '2023-01-22 00:00:00', 250, NULL, 'Unpaid');\n" + "" };
+		String[] TUPLES = {
+				"INSERT INTO `Bill` (`email`, `raisedOn`, `amount`, `settledOn`, `paymentStatus`, `dueDate`)\n"
+						+ "VALUES\n"
+						+ "	('amelia@gmail.com', '2023-01-22 00:00:02', 120, '2023-01-28 16:01:00', 'PAID', '2023-01-30 00:00:00'),\n"
+						+ "	('angelo@gmail.com', '2023-01-22 00:00:02', 120, NULL, 'UNPAID', '2023-01-30 00:00:00'),\n"
+						+ "	('don@gmail.com', '2023-01-22 00:00:02', 120, '2023-01-22 00:21:02', 'PAID', '2023-01-30 00:00:00'),\n"
+						+ "	('jeannette@gmail.com', '2023-01-22 00:00:00', 250, '2023-01-26 16:01:00', 'PAID', '2023-01-30 00:00:00'),\n"
+						+ "	('jo@gmail.com', '2023-01-22 00:00:02', 120, '2023-01-25 00:00:02', 'PAID', '2023-01-30 00:00:00'),\n"
+						+ "	('jo@gmail.com', '2023-01-22 00:00:03', 120, NULL, 'UNPAID', '2023-01-30 00:00:00'),\n"
+						+ "	('margarita@gmail.com', '2023-01-22 00:00:00', 250, NULL, 'UNPAID', '2023-01-30 00:00:00'),\n"
+						+ "	('susie@gmail.com', '2023-01-22 00:00:00', 250, NULL, 'UNPAID', '2023-01-30 00:00:00'),\n"
+						+ "	('susie@gmail.com', '2023-01-22 00:00:02', 120, NULL, 'UNPAID', '2023-01-30 00:00:00'),\n"
+						+ "	('wallace@gmail.com', '2023-01-22 00:00:02', 120, NULL, 'UNPAID', '2023-01-30 00:00:00');\n"
+						+ "" };
 		// for loop to put these in database
 		for (int i = 0; i < INITIAL.length; i++)
 			statement.execute(INITIAL[i]);

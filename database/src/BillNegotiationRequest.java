@@ -7,17 +7,13 @@ import lombok.Setter;
 @Setter
 @Getter
 @Builder
-public class Quote {
+public class BillNegotiationRequest {
 
-	private String modifiedTime;
-	private String createdTime;
-	private String description;
 	private String email;
+	private String createdOn;
+	private String description;
 	private String status;
 	private String requestType;
-	private Integer agreedPrice;
-	private Integer engagements;
-	private Integer treeID;
 	private Integer quoteRequestID;
 
 }

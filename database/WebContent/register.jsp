@@ -4,9 +4,73 @@
 <html>
 <head>
 <title>Registration</title>
+<style>
+body {
+	font-family: Arial, sans-serif;
+	background-color: #121212;
+	color: #eee;
+	margin: 0;
+	padding: 0;
+}
+
+div {
+	align-items: center;
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+	padding-top: 20px;
+}
+
+form {
+	width: 50%;
+	margin: auto;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 20px;
+}
+
+th, td {
+	padding: 8px;
+	text-align: center;
+}
+
+th {
+	background-color: #27ae60;
+	color: #fff;
+}
+
+input[type="text"], input[type="password"], input[type="submit"] {
+	width: calc(100% - 20px);
+	padding: 10px;
+	margin: 5px 0;
+	border-radius: 5px;
+	border: none;
+}
+
+input[type="submit"] {
+	background-color: #e74c3c;
+	color: #fff;
+	cursor: pointer;
+	transition: background-color 0.3s, color 0.3s;
+}
+
+input[type="submit"]:hover {
+	background-color: #c0392b;
+}
+
+a {
+	color: #3498db;
+	text-decoration: none;
+	display: block;
+	margin-top: 10px;
+}
+</style>
 </head>
 <body>
-	<div align="center">
+	<div>
 		<p>${errorOne }</p>
 		<p>${errorTwo }</p>
 		<form action="register">
@@ -16,12 +80,6 @@
 					<td align="center" colspan="3"><input type="text" name="email"
 						size="45" value="example@gmail.com" onfocus="this.value=''">
 					</td>
-				</tr>
-				<tr>
-					<th>First Name:</th>
-					<td align="center" colspan="3"><input type="text"
-						name="firstName" size="45" value="FirstName"
-						onfocus="this.value=''"></td>
 				</tr>
 				<tr>
 					<th>Last Name:</th>
@@ -64,3 +122,4 @@
 		</form>
 	</div>
 </body>
+</html>

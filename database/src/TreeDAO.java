@@ -120,173 +120,30 @@ public class TreeDAO {
 		}
 	}
 
-	public void insert(user users) throws SQLException {
-		connect_func("root", "pass1234");
-		String sql = "insert into User(email, firstName, lastName, password, birthday,adress_street_num, adress_street,adress_city,adress_state,adress_zip_code,cash_bal,PPS_bal, role) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ? ,? ,?, ?)";
-		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, users.getEmail());
-		preparedStatement.setString(2, users.getFirstName());
-		preparedStatement.setString(3, users.getLastName());
-		preparedStatement.setString(4, users.getPassword());
-		preparedStatement.setString(5, users.getBirthday());
-		preparedStatement.setString(6, users.getAdress_street_num());
-		preparedStatement.setString(7, users.getAdress_street());
-		preparedStatement.setString(8, users.getAdress_city());
-		preparedStatement.setString(9, users.getAdress_state());
-		preparedStatement.setString(10, users.getAdress_zip_code());
-		preparedStatement.setInt(11, users.getCash_bal());
-		preparedStatement.setInt(12, users.getPPS_bal());
-		preparedStatement.setString(13, users.getRole());
+	public Integer insert(Tree tree) throws SQLException {
+//		connect_func("root", "pass1234");
+		connect_func();
+		String sql = "INSERT INTO `Tree` (`height`, `address`, `distToHouse`) VALUES (?, ?, ?);";
+		ResultSet resultSet;
+		int insertStatus;
 
-		preparedStatement.executeUpdate();
+		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
+		preparedStatement.setInt(1, tree.getHeight());
+		preparedStatement.setString(2, tree.getAddress());
+		preparedStatement.setInt(3, tree.getDistToHouse());
+
+		insertStatus = preparedStatement.executeUpdate();
+
+		if (insertStatus > 0) {
+			resultSet = ((PreparedStatement) connect.prepareStatement("SELECT MAX(treeID) as maxTreeID FROM Tree;"))
+					.executeQuery();
+
+			return resultSet.next() ? resultSet.getInt("maxTreeID") : 0;
+
+		}
 		preparedStatement.close();
-	}
 
-	public boolean delete(String email) throws SQLException {
-		String sql = "DELETE FROM User WHERE email = ?";
-		connect_func();
-
-		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, email);
-
-		boolean rowDeleted = preparedStatement.executeUpdate() > 0;
-		preparedStatement.close();
-		return rowDeleted;
-	}
-
-	public boolean update(user users) throws SQLException {
-		String sql = "update User set firstName=?, lastName =?,password = ?,birthday=?,adress_street_num =?, adress_street=?,adress_city=?,adress_state=?,adress_zip_code=?, cash_bal=?, PPS_bal =? where email = ?";
-		connect_func();
-
-		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, users.getEmail());
-		preparedStatement.setString(2, users.getFirstName());
-		preparedStatement.setString(3, users.getLastName());
-		preparedStatement.setString(4, users.getPassword());
-		preparedStatement.setString(5, users.getBirthday());
-		preparedStatement.setString(6, users.getAdress_street_num());
-		preparedStatement.setString(7, users.getAdress_street());
-		preparedStatement.setString(8, users.getAdress_city());
-		preparedStatement.setString(9, users.getAdress_state());
-		preparedStatement.setString(10, users.getAdress_zip_code());
-		preparedStatement.setInt(11, users.getCash_bal());
-		preparedStatement.setInt(12, users.getPPS_bal());
-
-		boolean rowUpdated = preparedStatement.executeUpdate() > 0;
-		preparedStatement.close();
-		return rowUpdated;
-	}
-
-	public user getUser(String email) throws SQLException {
-		user user = null;
-		String sql = "SELECT * FROM User WHERE email = ?";
-
-		connect_func();
-
-		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, email);
-
-		ResultSet resultSet = preparedStatement.executeQuery();
-
-		if (resultSet.next()) {
-			String firstName = resultSet.getString("firstName");
-			String lastName = resultSet.getString("lastName");
-			String password = resultSet.getString("password");
-			String birthday = resultSet.getString("birthday");
-			String adress_street_num = resultSet.getString("adress_street_num");
-			String adress_street = resultSet.getString("adress_street");
-			String adress_city = resultSet.getString("adress_city");
-			String adress_state = resultSet.getString("adress_state");
-			String adress_zip_code = resultSet.getString("adress_zip_code");
-			int cash_bal = resultSet.getInt("cash_bal");
-			int PPS_bal = resultSet.getInt("PPS_bal");
-			user = new user(email, firstName, lastName, password, birthday, adress_street_num, adress_street,
-					adress_city, adress_state, adress_zip_code, cash_bal, PPS_bal);
-		}
-
-		resultSet.close();
-		statement.close();
-
-		return user;
-	}
-
-	public boolean checkEmail(String email) throws SQLException {
-		boolean checks = false;
-		String sql = "SELECT * FROM User WHERE email = ?";
-		connect_func();
-		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, email);
-		ResultSet resultSet = preparedStatement.executeQuery();
-
-		System.out.println(checks);
-
-		if (resultSet.next()) {
-			checks = true;
-		}
-
-		System.out.println(checks);
-		return checks;
-	}
-
-	public boolean checkAddress(String adress_street_num, String adress_street, String adress_city, String adress_state,
-			String adress_zip_code) throws SQLException {
-		boolean checks = false;
-		String sql = "SELECT * FROM User WHERE adress_street_num = ? AND adress_street = ? AND adress_city = ? AND adress_state = ? AND adress_zip_code = ?";
-		connect_func();
-		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, adress_street_num);
-		preparedStatement.setString(2, adress_street);
-		preparedStatement.setString(3, adress_city);
-		preparedStatement.setString(4, adress_state);
-		preparedStatement.setString(5, adress_zip_code);
-		ResultSet resultSet = preparedStatement.executeQuery();
-
-		System.out.println(checks);
-
-		if (resultSet.next()) {
-			checks = true;
-		}
-
-		System.out.println(checks);
-		return checks;
-	}
-
-	public boolean checkPassword(String password) throws SQLException {
-		boolean checks = false;
-		String sql = "SELECT * FROM User WHERE password = ?";
-		connect_func();
-		preparedStatement = (PreparedStatement) connect.prepareStatement(sql);
-		preparedStatement.setString(1, password);
-		ResultSet resultSet = preparedStatement.executeQuery();
-
-		System.out.println(checks);
-
-		if (resultSet.next()) {
-			checks = true;
-		}
-
-		System.out.println(checks);
-		return checks;
-	}
-
-	public boolean isValid(String email, String password) throws SQLException {
-		String sql = "SELECT * FROM User";
-		connect_func();
-		statement = (Statement) connect.createStatement();
-		ResultSet resultSet = statement.executeQuery(sql);
-
-		resultSet.last();
-
-		int setSize = resultSet.getRow();
-		resultSet.beforeFirst();
-
-		for (int i = 0; i < setSize; i++) {
-			resultSet.next();
-			if (resultSet.getString("email").equals(email) && resultSet.getString("password").equals(password)) {
-				return true;
-			}
-		}
-		return false;
+		return insertStatus;
 	}
 
 	public void init() throws SQLException, FileNotFoundException, IOException {
@@ -297,21 +154,23 @@ public class TreeDAO {
 
 				("CREATE TABLE `Tree` (\n" + "  `height` int DEFAULT NULL,\n"
 						+ "  `address` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,\n"
-						+ "  `distToHouse` int NOT NULL,\n" + "  PRIMARY KEY (`address`,`distToHouse`)\n"
-						+ ") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;") };
+						+ "  `distToHouse` int NOT NULL,\n"
+						+ "  `treeID` int(10) unsigned zerofill NOT NULL AUTO_INCREMENT,\n"
+						+ "  PRIMARY KEY (`treeID`)\n"
+						+ ") ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;") };
 
-		String[] TUPLES = { "INSERT INTO `Tree` (`height`, `address`, `distToHouse`)\n" + "VALUES\n"
-				+ "	(130, '23 Gavline Ave, Brookeford, MI', 1002),\n"
-				+ "	(130, '23 Gavline Ave, Brookeford, MI', 1021),\n"
-				+ "	(145, '23 Langdoh Ave, Brookeford, MI', 1003),\n"
-				+ "	(170, '3445 Gutentag German Lager Factory, Pritzger, MN', 2001),\n"
-				+ "	(160, '3445 Irish Avenue, Twin Cities, MN', 2001),\n"
-				+ "	(186, '3445 Italian Avenue, Bronx, NY', 3002),\n"
-				+ "	(120, '345 Chinatown Noodles, Brookeford, FL', 4011),\n"
-				+ "	(130, '45 Hick Town, Scoville, MN', 2001),\n"
-				+ "	(140, '456 Little India Curry House, MN', 2221),\n"
-				+ "	(130, '456 San Avocado Mexicantown Eatery, MN', 1001),\n"
-				+ "	(190, 'MLK Street, Compton, CA', 3002);\n" + "" };
+		String[] TUPLES = { "INSERT INTO `Tree` (`height`, `address`, `distToHouse`, `treeID`)\n" + "VALUES\n"
+				+ "	(130, '23 Gavline Ave, Brookeford, MI', 1002, 0000000012),\n"
+				+ "	(145, '23 Langdoh Ave, Brookeford, MI', 1003, 0000000013),\n"
+				+ "	(170, '3445 Gutentag German Lager Factory, Pritzger, MN', 2001, 0000000014),\n"
+				+ "	(160, '3445 Irish Avenue, Twin Cities, MN', 2001, 0000000015),\n"
+				+ "	(186, '3445 Italian Avenue, Bronx, NY', 3002, 0000000016),\n"
+				+ "	(120, '345 Chinatown Noodles, Brookeford, FL', 4011, 0000000017),\n"
+				+ "	(190, '45 Chief drive', 1021, 0000000018),\n"
+				+ "	(190, '45 Hick Town, Scoville, MN', 2001, 0000000019),\n"
+				+ "	(140, '456 Little India Curry House, MN', 2221, 0000000020),\n"
+				+ "	(130, '456 San Avocado Mexicantown Eatery, MN', 1001, 0000000021),\n"
+				+ "	(190, 'MLK Street, Compton, CA', 3002, 0000000022);\n" + "" };
 		// for loop to put these in database
 		for (int i = 0; i < INITIAL.length; i++)
 			statement.execute(INITIAL[i]);
